@@ -1,34 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import './style/output.css';
+import { Routes, Route, Link } from 'react-router-dom';
+import Productos from './components/Productos';
+import Empresa from './components/Empresa';
+import Factura from './components/Factura';
+import Home from './components/Home';
 
-export default function App() {
-  const [items, setItems] = useState([]);
-  const [name, setName] = useState('');
-
-  useEffect(() => {
-    fetch('/api/items')
-      .then(r => r.json())
-      .then(setItems)
-      .catch(() => setItems([]));
-  }, []);
-
-  async function create() {
-    if(!name) return;
-    await fetch('/api/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: '' }) });
-    setName('');
-    const res = await fetch('/api/items');
-    setItems(await res.json());
-  }
-
+export default function App(){
   return (
-    <div style={{ padding: 20 }}>
-      <h1>App Demo</h1>
-      <div>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" />
-        <button onClick={create}>Crear</button>
-      </div>
-      <ul>
-        {items.map(i => <li key={i.id}>{i.id} - {i.name}</li>)}
-      </ul>
+    <div style={{ padding: 20, fontFamily: 'Arial' }}>
+      <h1>App Demo - Facturación</h1>
+      <nav style={{ marginBottom: 20 }}>
+        <Link to="/">Home</Link> | {' '}
+        <Link to="/factura">Nueva Factura</Link> | {' '}
+        <Link to="/productos">Productos</Link> | {' '}
+        <Link to="/empresa">Empresa</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/productos" element={<Productos/>} />
+        <Route path="/empresa" element={<Empresa/>} />
+        <Route path="/factura" element={<Factura/>} />
+      </Routes>
     </div>
-  );
+  )
 }
