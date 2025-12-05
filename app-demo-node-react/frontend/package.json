@@ -6,11 +6,12 @@
     "start": "webpack serve --mode development --open --env dev",
     "build": "webpack --mode production",
     "tailwind": "tailwindcss -i ./src/style/tailwind.css -o ./src/style/output.css --watch",
-    "build:css": "tailwindcss -i ./src/style/tailwind.css -o ./src/style/output.css --minify",    
+    "build:css": "tailwindcss -i ./src/style/tailwind.css -o ./src/style/output.css --minify",
     "test": "echo \"No tests configured for frontend\" && exit 0"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.17",
+    "lucide-react": "^0.556.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.14.1",
