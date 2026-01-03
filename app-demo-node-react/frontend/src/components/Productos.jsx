@@ -12,25 +12,35 @@ import {
   TableBody,
   IconButton,
   Snackbar,
-  Alert
+  Alert,
+  FormControlLabel,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
-  const [form, setForm] = useState({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
+  const [form, setForm] = useState({ codigo: '', nombre: '', precioUnitario: '', pagaIVA: false });
   const [editIndex, setEditIndex] = useState(null);
   const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'success' });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [productoAEliminar, setProductoAEliminar] = useState(null);
+
+  const API_URL = process.env.API_URL;
 
   useEffect(() => {
-    fetch('/api/productos')
+    fetch(`${API_URL}/api/productos`)
       .then(r => r.json())
       .then(setProductos)
-      .catch(() => {});
+      .catch(err => console.error('Error en fetch:', err));
   }, []);
 
   async function save() {
-    const res = await fetch('/api/productos', {
+    const res = await fetch(`${API_URL}/api/productos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
@@ -38,10 +48,25 @@ export default function Productos() {
     if (res.ok) {
       const newProduct = await res.json();
       setProductos([...productos, newProduct]);
-      setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
+      setForm({ codigo: '', nombre: '', precioUnitario: '', pagaIVA: false });
       setFeedback({ open: true, message: 'Producto guardado ✅', severity: 'success' });
     } else {
       setFeedback({ open: true, message: 'Error al guardar ❌', severity: 'error' });
+    }
+  }
+
+  async function update(id) {
+    const res = await fetch(`${API_URL}/api/productos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    });
+    if (res.ok) {
+      const updatedProduct = await res.json();
+      setProductos(productos.map(p => p.id === id ? updatedProduct : p));
+      setFeedback({ open: true, message: 'Producto actualizado ✏️', severity: 'info' });
+    } else {
+      setFeedback({ open: true, message: 'Error al actualizar ❌', severity: 'error' });
     }
   }
 
@@ -51,16 +76,13 @@ export default function Productos() {
       return;
     }
 
-    if (editIndex !== null) {
-      const updated = [...productos];
-      updated[editIndex] = form;
-      setProductos(updated);
-      setEditIndex(null);
-      setFeedback({ open: true, message: 'Producto actualizado ✏️', severity: 'info' });
-    } else {
+    if (editIndex === null) {
       save();
+    } else {
+      update(productos[editIndex].id); // 👈 ahora sí llama al backend
+      setEditIndex(null);      
     }
-    setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
+    setForm({ codigo: '', nombre: '', precioUnitario: '', pagaIVA: false });
   }
 
   function edit(i) {
@@ -68,11 +90,17 @@ export default function Productos() {
     setEditIndex(i);
   }
 
-  function remove(i) {
-    const updated = [...productos];
-    updated.splice(i, 1);
-    setProductos(updated);
-    setFeedback({ open: true, message: 'Producto eliminado 🗑️', severity: 'info' });
+  async function remove(producto) {
+    const res = await fetch(`${API_URL}/api/productos/${producto.id}`, {
+      method: 'DELETE'
+    });
+
+    if (res.ok) {
+      setProductos(productos.filter(p => p.id !== producto.id));
+      setFeedback({ open: true, message: 'Producto eliminado 🗑️', severity: 'info' });
+    } else {
+      setFeedback({ open: true, message: 'Error al eliminar ❌', severity: 'error' });
+    }
   }
 
   return (
@@ -83,7 +111,7 @@ export default function Productos() {
 
       {/* Formulario */}
       <Typography variant="h6" gutterBottom>
-        {editIndex !== null ? 'Editar Producto' : 'Nuevo Producto'}
+        {editIndex === null ? 'Nuevo Producto' : 'Editar Producto' }
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
@@ -112,12 +140,14 @@ export default function Productos() {
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <TextField
-            label="IVA (%)"
-            type="number"
-            fullWidth
-            value={form.iva}
-            onChange={e => setForm({ ...form, iva: e.target.value })}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.pagaIVA}
+                onChange={e => setForm({ ...form, pagaIVA: e.target.checked })}
+              />
+            }
+            label="Paga IVA"
           />
         </Grid>
       </Grid>
@@ -133,7 +163,7 @@ export default function Productos() {
             variant="outlined"
             color="secondary"
             onClick={() => {
-              setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
+              setForm({ codigo: '', nombre: '', precioUnitario: '', pagaIVA: false });
               setEditIndex(null);
             }}
           >
@@ -149,7 +179,7 @@ export default function Productos() {
             <TableCell>Código</TableCell>
             <TableCell>Nombre</TableCell>
             <TableCell>Precio</TableCell>
-            <TableCell>IVA</TableCell>
+            <TableCell>Paga IVA</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
@@ -159,12 +189,18 @@ export default function Productos() {
               <TableCell>{p.codigo}</TableCell>
               <TableCell>{p.nombre}</TableCell>
               <TableCell>${p.precioUnitario}</TableCell>
-              <TableCell>{p.iva}%</TableCell>
+              <TableCell>{p.pagaIVA ? 'Sí' : 'No'}</TableCell>
               <TableCell>
                 <IconButton color="primary" onClick={() => edit(i)}>
                   <Edit />
                 </IconButton>
-                <IconButton color="error" onClick={() => remove(i)}>
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    setProductoAEliminar(p);
+                    setConfirmOpen(true);
+                  }}
+                >
                   <Delete />
                 </IconButton>
               </TableCell>
@@ -190,6 +226,30 @@ export default function Productos() {
           {feedback.message}
         </Alert>
       </Snackbar>
+
+      {/* Dialog de confirmación */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          ¿Está seguro que desea eliminar el producto
+          <strong> {productoAEliminar?.codigo} - {productoAEliminar?.nombre}</strong>?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} color="secondary">
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => {
+              if (productoAEliminar) remove(productoAEliminar);
+              setConfirmOpen(false);
+            }}
+            color="error"
+            variant="contained"
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }

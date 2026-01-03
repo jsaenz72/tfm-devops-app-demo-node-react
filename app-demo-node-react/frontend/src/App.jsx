@@ -1,20 +1,22 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-import Home from './components/Home';
-import Empresa from './components/Empresa';
 import Factura from './components/Factura';
 import Productos from './components/Productos';
+import Empresa from './components/Empresa';
 
-export default function App({ toggleColorMode, mode }) {
+function App() {
   return (
-    <Layout toggleColorMode={toggleColorMode} mode={mode}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/empresa" element={<Empresa />} />
-        <Route path="/factura" element={<Factura />} />
-        <Route path="/productos" element={<Productos />} />
-      </Routes>
-    </Layout>
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<div>Inicio</div>} />
+          <Route path="/factura" element={<Factura />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/empresa" element={<Empresa />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
+
+export default App;
