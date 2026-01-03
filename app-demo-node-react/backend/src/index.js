@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
+const path = require('node:path');
 
 // Routers
 const productosRouter = require('./routes/productos');
@@ -14,13 +14,16 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 const app = express();
+require('dotenv').config();
+
 app.use(cors());
 app.use(bodyParser.json());
 
 /* =====================================
    CONFIGURACIÓN DE SWAGGER
 ===================================== */
-
+const port = process.env.PORT || 3000;
+console.log(`http://localhost:${port}`);
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -31,7 +34,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: process.env.API_BASE_URL || "http://localhost:3000",
+        url: process.env.API_BASE_URL || `http://localhost:${port}`,
       },
     ],
   },
@@ -41,7 +44,7 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-require('dotenv').config();
+
 
 // Ruta de documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -68,7 +71,6 @@ app.get('/', (req, res) => {
    SERVER
 ===================================== */
 
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Backend listening on ${port}`);
   console.log(`Swagger disponible en http://localhost:${port}/api-docs`);

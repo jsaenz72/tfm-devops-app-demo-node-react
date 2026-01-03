@@ -1,1 +1,158 @@
-[]
+[
+  {
+    "id": 1,
+    "numeroFactura": 103,
+    "cabecera": {
+      "empresa": {
+        "ruc": "",
+        "numeroAutorizacion": "",
+        "ambiente": "Producción",
+        "nombreEmpresa": "Mi Empresa S.A.",
+        "nombreCorto": "MiEmpresa",
+        "direccion": "Av. Principal 123",
+        "porcentajeIVA": 12
+      },
+      "cliente": {
+        "identificacion": "1712140555",
+        "nombre": "SAGA CONSULTORES Y SERVICIOS",
+        "direccion": "",
+        "telefono": "",
+        "correoElectronico": "jsaenz72@hotmail.com"
+      },
+      "numeroFactura": "",
+      "fecha": "2026-01-03",
+      "formaPago": "Tarjeta de Crédito"
+    },
+    "detalle": [
+      {
+        "codigo": 1,
+        "cantidad": 1,
+        "descripcion": "TECLADO",
+        "precioUnitario": 100.2,
+        "pagaIVA": true,
+        "precioTotal": 100.2
+      },
+      {
+        "codigo": 2,
+        "cantidad": 1,
+        "descripcion": "MOUSE",
+        "precioUnitario": 12,
+        "pagaIVA": true,
+        "precioTotal": 12
+      },
+      {
+        "codigo": 3,
+        "cantidad": 1,
+        "descripcion": "TABLET",
+        "precioUnitario": 123,
+        "pagaIVA": true,
+        "precioTotal": 123
+      },
+      {
+        "codigo": "",
+        "cantidad": 1,
+        "descripcion": "",
+        "precioUnitario": 0,
+        "pagaIVA": false,
+        "precioTotal": 0
+      },
+      {
+        "codigo": "",
+        "cantidad": 1,
+        "descripcion": "",
+        "precioUnitario": 0,
+        "pagaIVA": false,
+        "precioTotal": 0
+      },
+      {
+        "codigo": "",
+        "cantidad": 1,
+        "descripcion": "",
+        "precioUnitario": 0,
+        "pagaIVA": false,
+        "precioTotal": 0
+      }
+    ],
+    "totales": {
+      "subtotalConIVA": 235.2,
+      "subtotalSinIVA": 0,
+      "valorTotal": 235.2
+    },
+    "audit": {
+      "fechaCreacion": "2026-01-03T22:33:27.073Z",
+      "usuarioCreacion": "system",
+      "fechaActualizacion": null,
+      "usuarioActualizacion": null
+    }
+  },
+  {
+    "id": 2,
+    "numeroFactura": 104,
+    "cabecera": {
+      "empresa": {
+        "ruc": "",
+        "numeroAutorizacion": "",
+        "ambiente": "Producción",
+        "nombreEmpresa": "Mi Empresa S.A.",
+        "nombreCorto": "MiEmpresa",
+        "direccion": "Av. Principal 123",
+        "porcentajeIVA": 12
+      },
+      "cliente": {
+        "identificacion": "1712140555",
+        "nombre": "SAGA CONSULTORES Y SERVICIOS",
+        "direccion": "",
+        "telefono": "",
+        "correoElectronico": "jsaenz72@hotmail.com"
+      },
+      "numeroFactura": "",
+      "fecha": "2026-01-03",
+      "formaPago": "Tarjeta de Crédito"
+    },
+    "detalle": [
+      {
+        "codigo": 1,
+        "cantidad": 1,
+        "descripcion": "TECLADO",
+        "precioUnitario": 100.2,
+        "pagaIVA": true,
+        "precioTotal": 100.2
+      },
+      {
+        "codigo": 1,
+        "cantidad": 1,
+        "descripcion": "TECLADO",
+        "precioUnitario": 100.2,
+        "pagaIVA": true,
+        "precioTotal": 100.2
+      },
+      {
+        "codigo": 2,
+        "cantidad": 1,
+        "descripcion": "MOUSE",
+        "precioUnitario": 12,
+        "pagaIVA": true,
+        "precioTotal": 12
+      },
+      {
+        "codigo": 3,
+        "cantidad": 1,
+        "descripcion": "TABLET",
+        "precioUnitario": 123,
+        "pagaIVA": true,
+        "precioTotal": 123
+      }
+    ],
+    "totales": {
+      "subtotalConIVA": 335.4,
+      "subtotalSinIVA": 0,
+      "valorTotal": 335.4
+    },
+    "audit": {
+      "fechaCreacion": "2026-01-03T22:33:38.401Z",
+      "usuarioCreacion": "system",
+      "fechaActualizacion": null,
+      "usuarioActualizacion": null
+    }
+  }
+]

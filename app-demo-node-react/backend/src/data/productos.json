@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": 1,
+    "codigo": "001",
+    "nombre": "TECLADO",
+    "precioUnitario": 100.2,
+    "infoAdicional": "NINGUNA",
+    "pagaIVA": true
+  },
+  {
+    "id": 2,
+    "codigo": "002",
+    "nombre": "MOUSE",
+    "precioUnitario": 12,
+    "infoAdicional": "NINGUNA",
+    "pagaIVA": true
+  },
+  {
+    "id": 3,
+    "codigo": "003",
+    "nombre": "TABLET",
+    "precioUnitario": 123,
+    "infoAdicional": "TABLET ALTA DEFINICIÓN",
+    "pagaIVA": true
+  }
+]

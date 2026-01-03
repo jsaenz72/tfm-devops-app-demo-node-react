@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "nombreEmpresa": "SAGA CONSULTORES Y SERVICIOS",
+    "nombreComercial": "SAGA",
+    "ruc": "1792074037003",
+    "telefono": "0998548622",
+    "direccion": "ECUADOR/PICHINCHA/QUITO/LA LUZ",
+    "puntoEmision": "001",
+    "numeroFactura": 104,
+    "porcentajeIVA": 15,
+    "fechaCreacion": "2026-01-03T17:52:13.619Z",
+    "fechaActualizacion": "2026-01-03T17:52:13.619Z",
+    "usuarioCreacion": "JSAENZ",
+    "usuarioActualizacion": "JSAENZ"
+  }
+]
