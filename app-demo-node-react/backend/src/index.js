@@ -41,6 +41,7 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
+require('dotenv').config();
 
 // Ruta de documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

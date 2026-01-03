@@ -1,27 +1,20 @@
 import React from 'react';
-import './style/output.css';
-import { Routes, Route, Link } from 'react-router-dom';
-import Productos from './components/Productos';
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Home from './components/Home';
 import Empresa from './components/Empresa';
 import Factura from './components/Factura';
-import Home from './components/Home';
+import Productos from './components/Productos';
 
-export default function App(){
+export default function App({ toggleColorMode, mode }) {
   return (
-    <div style={{ padding: 20, fontFamily: 'Arial' }}>
-      <h1>App Demo - Facturación</h1>
-      <nav style={{ marginBottom: 20 }}>
-        <Link to="/">Home</Link> | {' '}
-        <Link to="/factura">Nueva Factura</Link> | {' '}
-        <Link to="/productos">Productos</Link> | {' '}
-        <Link to="/empresa">Empresa</Link>
-      </nav>
+    <Layout toggleColorMode={toggleColorMode} mode={mode}>
       <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/productos" element={<Productos/>} />
-        <Route path="/empresa" element={<Empresa/>} />
-        <Route path="/factura" element={<Factura/>} />
+        <Route path="/" element={<Home />} />
+        <Route path="/empresa" element={<Empresa />} />
+        <Route path="/factura" element={<Factura />} />
+        <Route path="/productos" element={<Productos />} />
       </Routes>
-    </div>
-  )
+    </Layout>
+  );
 }

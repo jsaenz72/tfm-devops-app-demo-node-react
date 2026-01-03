@@ -1,9 +1,26 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Snackbar,
+  Alert
+} from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [form, setForm] = useState({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
   const [editIndex, setEditIndex] = useState(null);
+  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     fetch('/api/productos')
@@ -22,15 +39,15 @@ export default function Productos() {
       const newProduct = await res.json();
       setProductos([...productos, newProduct]);
       setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
-      alert('Producto guardado');
+      setFeedback({ open: true, message: 'Producto guardado ✅', severity: 'success' });
     } else {
-      alert('Error');
+      setFeedback({ open: true, message: 'Error al guardar ❌', severity: 'error' });
     }
   }
 
   function addOrUpdate() {
     if (!form.codigo || !form.nombre) {
-      alert('Por favor completa los campos requeridos');
+      setFeedback({ open: true, message: 'Completa los campos requeridos ⚠️', severity: 'warning' });
       return;
     }
 
@@ -39,6 +56,7 @@ export default function Productos() {
       updated[editIndex] = form;
       setProductos(updated);
       setEditIndex(null);
+      setFeedback({ open: true, message: 'Producto actualizado ✏️', severity: 'info' });
     } else {
       save();
     }
@@ -54,116 +72,124 @@ export default function Productos() {
     const updated = [...productos];
     updated.splice(i, 1);
     setProductos(updated);
+    setFeedback({ open: true, message: 'Producto eliminado 🗑️', severity: 'info' });
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800">Gestión de Productos</h2>
-        </div>
+    <Paper sx={{ p: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Gestión de Productos
+      </Typography>
 
-        <div className="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
-            {editIndex !== null ? 'Editar Producto' : 'Nuevo Producto'}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-              placeholder="Código del producto *"
-              value={form.codigo}
-              onChange={e => setForm({ ...form, codigo: e.target.value })}
-            />
-            <input
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-              placeholder="Nombre del producto *"
-              value={form.nombre}
-              onChange={e => setForm({ ...form, nombre: e.target.value })}
-            />
-            <input
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-              type="number"
-              step="0.01"
-              placeholder="Precio unitario"
-              value={form.precioUnitario}
-              onChange={e => setForm({ ...form, precioUnitario: e.target.value })}
-            />
-            <input
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-              type="number"
-              step="0.01"
-              placeholder="IVA (%)"
-              value={form.iva}
-              onChange={e => setForm({ ...form, iva: e.target.value })}
-            />
-          </div>
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={addOrUpdate}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-md hover:shadow-lg"
-            >
-              {editIndex !== null ? 'Actualizar' : 'Agregar'}
-            </button>
-            <button
-              onClick={() => {
-                setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
-                setEditIndex(null);
-              }}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+      {/* Formulario */}
+      <Typography variant="h6" gutterBottom>
+        {editIndex !== null ? 'Editar Producto' : 'Nuevo Producto'}
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Código *"
+            fullWidth
+            value={form.codigo}
+            onChange={e => setForm({ ...form, codigo: e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Nombre *"
+            fullWidth
+            value={form.nombre}
+            onChange={e => setForm({ ...form, nombre: e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Precio unitario"
+            type="number"
+            fullWidth
+            value={form.precioUnitario}
+            onChange={e => setForm({ ...form, precioUnitario: e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="IVA (%)"
+            type="number"
+            fullWidth
+            value={form.iva}
+            onChange={e => setForm({ ...form, iva: e.target.value })}
+          />
+        </Grid>
+      </Grid>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-100 border-b-2 border-gray-200">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Código</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Nombre</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Precio</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">IVA</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productos.map((p, i) => (
-                <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-gray-800">{p.codigo}</td>
-                  <td className="px-6 py-4 text-gray-800">{p.nombre}</td>
-                  <td className="px-6 py-4 text-gray-800">${p.precioUnitario}</td>
-                  <td className="px-6 py-4 text-gray-800">{p.iva}%</td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => edit(i)}
-                      className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition mr-2 text-sm font-medium"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => remove(i)}
-                      className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-medium"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid item>
+          <Button variant="contained" color="success" onClick={addOrUpdate}>
+            {editIndex !== null ? 'Actualizar' : 'Agregar'}
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              setForm({ codigo: '', nombre: '', precioUnitario: '', iva: '' });
+              setEditIndex(null);
+            }}
+          >
+            Cancelar
+          </Button>
+        </Grid>
+      </Grid>
+
+      {/* Tabla */}
+      <Table sx={{ mt: 4 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Código</TableCell>
+            <TableCell>Nombre</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>IVA</TableCell>
+            <TableCell>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {productos.map((p, i) => (
+            <TableRow key={i}>
+              <TableCell>{p.codigo}</TableCell>
+              <TableCell>{p.nombre}</TableCell>
+              <TableCell>${p.precioUnitario}</TableCell>
+              <TableCell>{p.iva}%</TableCell>
+              <TableCell>
+                <IconButton color="primary" onClick={() => edit(i)}>
+                  <Edit />
+                </IconButton>
+                <IconButton color="error" onClick={() => remove(i)}>
+                  <Delete />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
           {productos.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No hay productos registrados
-            </div>
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                No hay productos registrados
+              </TableCell>
+            </TableRow>
           )}
-        </div>
-      </div>
-    </div>
+        </TableBody>
+      </Table>
+
+      {/* Feedback */}
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={3000}
+        onClose={() => setFeedback({ ...feedback, open: false })}
+      >
+        <Alert severity={feedback.severity} sx={{ width: '100%' }}>
+          {feedback.message}
+        </Alert>
+      </Snackbar>
+    </Paper>
   );
 }

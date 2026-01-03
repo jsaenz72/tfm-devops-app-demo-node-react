@@ -1,0 +1,12 @@
+FROM node:18-alpine
+WORKDIR /app
+# Copiamos package.json y lockfile
+COPY package*.json ./
+# Instalamos TODAS las dependencias (incluyendo dev)
+RUN npm ci
+# Copiamos el resto del código
+COPY . .
+# Exponemos el puerto de desarrollo
+EXPOSE 3030
+# Hot-reload con nodemon
+CMD ["npx", "nodemon", "src/index.js"]
