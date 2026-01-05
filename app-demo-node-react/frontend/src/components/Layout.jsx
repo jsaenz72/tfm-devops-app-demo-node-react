@@ -1,9 +1,9 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText, Box } from '@mui/material';
 import { Receipt, Store, Business, Home } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 
-export default function Layout({ children }) {
+export default function Layout() {
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed">
@@ -30,11 +30,15 @@ export default function Layout({ children }) {
             <ListItemIcon><Business /></ListItemIcon>
             <ListItemText primary="Empresa" />
           </ListItem>
+          <ListItem button component={Link} to="/reportes">
+            <ListItemIcon><Business /></ListItemIcon>
+            <ListItemText primary="Reportes" />
+          </ListItem>
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        {children}
+        <Outlet />
       </Box>
     </Box>
   );

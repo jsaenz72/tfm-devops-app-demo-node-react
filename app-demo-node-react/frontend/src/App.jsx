@@ -1,21 +1,23 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
 import Layout from './components/Layout';
 import Factura from './components/Factura';
 import Productos from './components/Productos';
 import Empresa from './components/Empresa';
+import Reportes from './components/Reportes';
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<div>Inicio</div>} />
-          <Route path="/factura" element={<Factura />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/empresa" element={<Empresa />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />  
+        <Route path="factura" element={<Factura />} />
+        <Route path="productos" element={<Productos />} />
+        <Route path="empresa" element={<Empresa />} />
+        <Route path="reportes" element={<Reportes />} />
+      </Route>
+    </Routes>
   );
 }
 

@@ -6,6 +6,6 @@ RUN npm ci
 
 COPY . .
 
-# Exponemos el puerto de Vite (por defecto 5173)
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+CMD ["npm", "start"]

@@ -49,9 +49,9 @@ export default function Home() {
         <Card>
           <CardContent>
             <Business color="secondary" />
-            <Typography variant="h6">Profesional</Typography>
-            <Typography variant="h4">Elegante</Typography>
-            <Typography color="text.secondary">Interfaz moderna y clara</Typography>
+            <Typography variant="h6">Ambiente</Typography>
+            <Typography variant="h4">Pruebas</Typography>
+            <Typography color="text.secondary">API - Servicio de Rentas Internas</Typography>
           </CardContent>
         </Card>
       </Grid>

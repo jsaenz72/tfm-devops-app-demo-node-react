@@ -2,11 +2,12 @@
   "name": "app-demo-frontend",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "start": "webpack serve --mode development --open --env dev",
-    "build": "webpack --mode production",
-    "test": "echo \"No tests configured for frontend\" && exit 0"
-  },
+
+"scripts": {
+  "start": "webpack serve --mode development --env dev --host 0.0.0.0 --port 5173",
+  "build": "webpack --mode production",
+  "test": "echo \"No tests configured for frontend\" && exit 0"
+},
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
