@@ -154,5 +154,75 @@
       "fechaActualizacion": null,
       "usuarioActualizacion": null
     }
+  },
+  {
+    "id": 3,
+    "numeroFactura": 105,
+    "cabecera": {
+      "empresa": {
+        "ruc": "",
+        "numeroAutorizacion": "",
+        "ambiente": "Producción",
+        "nombreEmpresa": "Mi Empresa S.A.",
+        "nombreCorto": "MiEmpresa",
+        "direccion": "Av. Principal 123",
+        "porcentajeIVA": 12
+      },
+      "cliente": {
+        "identificacion": "1712140555",
+        "nombre": "ERNESTO BURBANO",
+        "direccion": "",
+        "telefono": "",
+        "correoElectronico": "jsaenz72@hotmail.com"
+      },
+      "numeroFactura": "",
+      "fecha": "2026-01-03",
+      "formaPago": "Efectivo"
+    },
+    "detalle": [
+      {
+        "codigo": 1,
+        "cantidad": 7,
+        "descripcion": "TECLADO",
+        "precioUnitario": 100.2,
+        "pagaIVA": false,
+        "precioTotal": 701.4
+      },
+      {
+        "codigo": 2,
+        "cantidad": 4,
+        "descripcion": "MOUSE",
+        "precioUnitario": 12,
+        "pagaIVA": true,
+        "precioTotal": 48
+      },
+      {
+        "codigo": 2,
+        "cantidad": 5,
+        "descripcion": "MOUSE",
+        "precioUnitario": 12,
+        "pagaIVA": true,
+        "precioTotal": 60
+      },
+      {
+        "codigo": 3,
+        "cantidad": 5,
+        "descripcion": "TABLET",
+        "precioUnitario": 123,
+        "pagaIVA": true,
+        "precioTotal": 615
+      }
+    ],
+    "totales": {
+      "subtotalConIVA": 723,
+      "subtotalSinIVA": 701.4,
+      "valorTotal": 1424.4
+    },
+    "audit": {
+      "fechaCreacion": "2026-01-03T23:20:48.871Z",
+      "usuarioCreacion": "system",
+      "fechaActualizacion": null,
+      "usuarioActualizacion": null
+    }
   }
 ]
