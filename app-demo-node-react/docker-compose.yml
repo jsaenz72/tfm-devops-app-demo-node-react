@@ -1,17 +1,21 @@
 services:
   backend:
+    container_name: backend
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
       - "3030:3030"
     volumes:
+      # Código fuente
       - ./backend:/app
-      - /app/node_modules
+      # DATOS persistentes (bind mount)
+      - ./backend/src/data:/app/src/data
     environment:
       - NODE_ENV=development
 
   frontend:
+    container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -19,8 +23,9 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
     environment:
       - NODE_ENV=development
+      - API_URL=http://localhost:3030
+      - API_EXTERNA=http://localhost:3030

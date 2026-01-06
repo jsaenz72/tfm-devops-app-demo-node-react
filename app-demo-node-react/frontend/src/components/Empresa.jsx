@@ -15,7 +15,6 @@ export default function Empresa() {
 const API_URL = process.env.API_URL;
 
 useEffect(() => {
-  console.log('Backend URL:', `${API_URL}/api/empresa`);
   fetch(`${API_URL}/api/empresa`)
     .then(r => r.json())
     .then(j => setForm(j))
