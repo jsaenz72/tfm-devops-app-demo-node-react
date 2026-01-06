@@ -1,5 +1,4 @@
 import express from 'express';
-import { readFileSync } from 'fs';
 import { readList, writeList } from '../lib/storage.js'; // 👈 usa import
 
 const router = express.Router();
