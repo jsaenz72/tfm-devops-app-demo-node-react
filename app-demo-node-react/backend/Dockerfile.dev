@@ -9,4 +9,4 @@ COPY . .
 # Exponemos el puerto de desarrollo
 EXPOSE 3030
 # Hot-reload con nodemon
-CMD ["npx", "nodemon", "src/index.js"]
+CMD ["./init-data.sh"]
