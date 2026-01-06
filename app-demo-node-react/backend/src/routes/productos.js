@@ -1,7 +1,9 @@
-const express = require('express');
-const { readList, writeList } = require('../lib/storage');
+import express from 'express';
+import { readList, writeList } from '../lib/storage.js';
+
 const router = express.Router();
 
+// GET: listar todos los productos
 /**
  * @swagger
  * tags:
@@ -25,11 +27,13 @@ const router = express.Router();
  *               items:
  *                 type: object
  */
+
 router.get('/', async (req, res) => {
   const list = await readList('productos');
   res.json(list);
 });
 
+// POST: crear un nuevo producto
 /**
  * @swagger
  * /api/productos:
@@ -45,7 +49,6 @@ router.get('/', async (req, res) => {
  *             required:
  *               - codigo
  *               - nombre
- *               - precioUnitario 
  *             properties:
  *               codigo:
  *                 type: string
@@ -57,7 +60,7 @@ router.get('/', async (req, res) => {
  *                 type: string
  *               pagaIVA:
  *                 type: boolean
- *                 description: Indica si el producto paga IVA (true = sí, false = no)
+ *                 description: Indica si el producto paga IVA
  *     responses:
  *       201:
  *         description: Producto creado
@@ -97,6 +100,7 @@ router.post('/', async (req, res) => {
   res.status(201).json(nuevo);
 });
 
+// PUT: actualizar un producto por ID
 /**
  * @swagger
  * /api/productos/{id}:
@@ -125,7 +129,6 @@ router.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const list = await readList('productos');
   const idx = list.findIndex(p => p.id === id);
-  console.log('req.body: ', req.body)
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
 
   const { codigo, nombre, precioUnitario, infoAdicional, pagaIVA } = req.body;
@@ -134,7 +137,7 @@ router.put('/:id', async (req, res) => {
     ...list[idx],
     codigo: codigo ?? list[idx].codigo,
     nombre: nombre ?? list[idx].nombre,
-    precioUnitario: precioUnitario === undefined ?  list[idx].precioUnitario : Number(precioUnitario),
+    precioUnitario: precioUnitario === undefined ? list[idx].precioUnitario : Number(precioUnitario),
     infoAdicional: infoAdicional ?? list[idx].infoAdicional,
     pagaIVA: pagaIVA === true || pagaIVA === 'true'
   };
@@ -143,6 +146,7 @@ router.put('/:id', async (req, res) => {
   res.json(list[idx]);
 });
 
+// DELETE: eliminar un producto por ID
 /**
  * @swagger
  * /api/productos/{id}:
@@ -161,6 +165,7 @@ router.put('/:id', async (req, res) => {
  *       404:
  *         description: Producto no encontrado
  */
+
 router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const list = await readList('productos');
@@ -171,4 +176,4 @@ router.delete('/:id', async (req, res) => {
   res.json(deleted);
 });
 
-module.exports = router;
+export default router; // 👈 clave: export default

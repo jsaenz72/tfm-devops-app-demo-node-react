@@ -1,5 +1,10 @@
-const fs = require('fs-extra');
-const path = require('node:path');
+import fs from 'fs-extra';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// __dirname no existe en ESM, lo reconstruimos
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
@@ -11,7 +16,7 @@ function filePath(name) {
  * Lee una lista desde un archivo JSON.
  * Siempre devuelve un array.
  */
-async function readList(name) {
+export async function readList(name) {
   const p = filePath(name);
 
   try {
@@ -24,7 +29,6 @@ async function readList(name) {
     }
 
     const data = await fs.readJson(p);
-
     return Array.isArray(data) ? data : [];
   } catch (err) {
     console.error(`[${new Date().toISOString()}] readList error en ${p}:`, err);
@@ -36,7 +40,7 @@ async function readList(name) {
  * Escribe una lista en un archivo JSON.
  * Reemplaza completamente el contenido.
  */
-async function writeList(name, list) {
+export async function writeList(name, list) {
   if (!Array.isArray(list)) {
     throw new TypeError(`writeList: se esperaba un array, recibido ${typeof list}`);
   }
@@ -55,7 +59,7 @@ async function writeList(name, list) {
 /**
  * Inicializa un archivo vacío (opcional).
  */
-async function initFile(name) {
+export async function initFile(name) {
   const p = filePath(name);
   await fs.ensureDir(DATA_DIR);
 
@@ -63,5 +67,3 @@ async function initFile(name) {
     await fs.writeJson(p, [], { spaces: 2 });
   }
 }
-
-module.exports = { readList, writeList, initFile };

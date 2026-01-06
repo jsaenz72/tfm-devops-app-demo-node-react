@@ -1,5 +1,6 @@
-const express = require('express');
-const { readList, writeList } = require('../lib/storage');
+import express from 'express';
+import { readList, writeList } from '../lib/storage.js';
+
 const router = express.Router();
 
 /**
@@ -30,23 +31,23 @@ function validarEmpresa(data) {
 
 /**
  * @swagger
- * tags:
- *   name: Empresa
- *   description: Gestión de información de la empresa
- */
-
-/**
- * @swagger
  * /api/empresa:
  *   get:
- *     summary: Obtiene la información de la empresa
+ *     summary: Obtener información de la empresa
  *     tags: [Empresa]
  *     responses:
  *       200:
- *         description: Datos de la empresa
+ *         description: Información de la empresa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
  *       204:
- *         description: No existe información de empresa
+ *         description: No existe información registrada
+ *       500:
+ *         description: Error interno del servidor
  */
+// GET: obtiene la información de la empresa
 router.get('/', async (req, res) => {
   try {
     const list = await readList('empresa');
@@ -62,11 +63,12 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST: crea la información de la empresa
 /**
  * @swagger
  * /api/empresa:
  *   post:
- *     summary: Crea la información de la empresa
+ *     summary: Crear información de la empresa
  *     tags: [Empresa]
  *     requestBody:
  *       required: true
@@ -84,12 +86,34 @@ router.get('/', async (req, res) => {
  *               - numeroFactura
  *               - porcentajeIVA
  *               - usuarioCreacion
+ *             properties:
+ *               nombreEmpresa:
+ *                 type: string
+ *               nombreComercial:
+ *                 type: string
+ *               ruc:
+ *                 type: string
+ *               telefono:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *               puntoEmision:
+ *                 type: string
+ *               numeroFactura:
+ *                 type: integer
+ *               porcentajeIVA:
+ *                 type: number
+ *               usuarioCreacion:
+ *                 type: string
  *     responses:
  *       201:
- *         description: Empresa creada
+ *         description: Empresa creada correctamente
  *       400:
  *         description: Datos inválidos
+ *       500:
+ *         description: Error interno
  */
+
 router.post('/', async (req, res) => {
   try {
     const validacion = validarEmpresa({
@@ -122,36 +146,27 @@ router.post('/', async (req, res) => {
   }
 });
 
+
+// PUT: actualiza la información de la empresa
 /**
  * @swagger
  * /api/empresa:
  *   put:
- *     summary: Actualiza la información de la empresa (reemplazo completo)
+ *     summary: Actualizar información de la empresa
  *     tags: [Empresa]
  *     requestBody:
  *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nombreEmpresa
- *               - nombreComercial
- *               - ruc
- *               - telefono
- *               - direccion
- *               - puntoEmision
- *               - numeroFactura
- *               - porcentajeIVA
- *               - usuarioActualizacion
  *     responses:
  *       200:
  *         description: Empresa actualizada
  *       400:
  *         description: Datos inválidos
  *       404:
- *         description: No existe empresa
+ *         description: Empresa no encontrada
+ *       500:
+ *         description: Error interno
  */
+
 router.put('/', async (req, res) => {
   try {
     const list = await readList('empresa');
@@ -198,4 +213,4 @@ router.put('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
