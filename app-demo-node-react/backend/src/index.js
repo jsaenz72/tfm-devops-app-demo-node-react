@@ -57,7 +57,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 /* =====================================
    RUTAS DE LA API
 ===================================== */
-// app.use('/api/items', itemsRouter);
 app.use('/api/productos', productosRouter);
 app.use('/api/empresa', empresaRouter);
 app.use('/api/facturas', facturasRouter);
