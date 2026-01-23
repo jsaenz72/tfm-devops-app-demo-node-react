@@ -17,34 +17,34 @@ import {
 } from '@mui/material';
 
 export default function Factura() {
-  const [empresa, setEmpresa] = useState({});
+  const [empresa, setEmpresa] = useState([]);
   const [productos, setProductos] = useState([]);
   const [lineas, setLineas] = useState([]);
 
   const [cabecera, setCabecera] = useState({
-    fecha: new Date().toISOString().slice(0, 10),
     cliente: {
       identificacion: '',
       nombre: '',
       direccion: '',
       telefono: '',
       correoElectronico: ''
-    }
+    },
+    fecha: new Date().toISOString().slice(0, 10)
   });
 
   const [formaPago, setFormaPago] = useState('Efectivo');
-  const [porcentajeIVA, setPorcentajeIVA] = useState(0);
-
   const [feedback, setFeedback] = useState({
     open: false,
     message: '',
     severity: 'success'
   });
 
+  const [porcentajeIVA, setPorcentajeIVA] = useState(0);
+
   const API_URL = process.env.API_URL;
 
   /* ===============================
-     CARGA INICIAL
+     CARGA DE DATOS
      =============================== */
 
   useEffect(() => {
@@ -67,25 +67,31 @@ export default function Factura() {
   }, []);
 
   /* ===============================
-     LÍNEAS DE FACTURA
+     LÍNEAS
      =============================== */
 
   function addLinea() {
     setLineas([
       ...lineas,
-      { productoId: '', cantidad: 1, precioUnitario: 0, pagaIVA: false, descuento: 0 }
+      {
+        productoId: '',
+        cantidad: 1,
+        precioUnitario: 0,
+        pagaIVA: false,
+        descuento: 0
+      }
     ]);
   }
 
-  function updateLinea(index, field, value) {
+  function updateLinea(i, field, value) {
     const updated = [...lineas];
-    updated[index][field] = value;
+    updated[i][field] = value;
 
     if (field === 'productoId') {
       const prod = productos.find(p => p.id === value);
       if (prod) {
-        updated[index].precioUnitario = prod.precioUnitario;
-        updated[index].pagaIVA = prod.pagaIVA;
+        updated[i].precioUnitario = prod.precioUnitario;
+        updated[i].pagaIVA = prod.pagaIVA;
       }
     }
 
@@ -96,13 +102,14 @@ export default function Factura() {
      CÁLCULOS
      =============================== */
 
-  function calcularTotales() {
+  function calcular() {
     let subtotal = 0;
     let iva = 0;
     const ivaRate = porcentajeIVA / 100;
 
     lineas.forEach(l => {
-      const base = l.precioUnitario * l.cantidad - (l.descuento || 0);
+      const base =
+        l.precioUnitario * l.cantidad - (l.descuento || 0);
       subtotal += base;
       if (l.pagaIVA) {
         iva += base * ivaRate;
@@ -116,22 +123,21 @@ export default function Factura() {
     };
   }
 
-  const totals = calcularTotales();
+  const totals = calcular();
 
   /* ===============================
-     VALIDACIONES
+     VALIDACIÓN
      =============================== */
 
   function validarCliente() {
-    const c = cabecera.cliente;
+    if (!cabecera.cliente.nombre.trim())
+      return 'El nombre completo es obligatorio';
 
-    if (!c.nombre.trim()) return 'El nombre completo es obligatorio';
-    if (!c.identificacion.trim()) return 'La identificación es obligatoria';
-    if (!c.direccion.trim()) return 'La dirección es obligatoria';
-    if (!c.telefono.trim()) return 'El teléfono es obligatorio';
+    if (!cabecera.cliente.identificacion.trim())
+      return 'La identificación es obligatoria';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(c.correoElectronico))
+    if (!emailRegex.test(cabecera.cliente.correoElectronico))
       return 'Correo electrónico inválido';
 
     return null;
@@ -144,52 +150,74 @@ export default function Factura() {
   async function guardarFactura() {
     const error = validarCliente();
     if (error) {
-      setFeedback({ open: true, message: error, severity: 'error' });
+      setFeedback({
+        open: true,
+        message: error,
+        severity: 'error'
+      });
       return;
     }
 
     const factura = {
       cabecera: {
-        fecha: cabecera.fecha,
-        formaPago,
-        cliente: cabecera.cliente
+        ...cabecera,
+        formaPago
       },
       detalle: lineas.map(l => ({
         codigo: l.productoId,
         cantidad: l.cantidad,
-        descripcion: productos.find(p => p.id === l.productoId)?.nombre || '',
+        descripcion:
+          productos.find(p => p.id === l.productoId)?.nombre || '',
         precioUnitario: l.precioUnitario,
         pagaIVA: l.pagaIVA,
-        precioTotal: l.precioUnitario * l.cantidad - (l.descuento || 0)
-      }))
+        precioTotal:
+          l.precioUnitario * l.cantidad - (l.descuento || 0)
+      })),
+      totales: {
+        subtotalConIVA: lineas
+          .filter(l => l.pagaIVA)
+          .reduce(
+            (acc, l) =>
+              acc +
+              (l.precioUnitario * l.cantidad -
+                (l.descuento || 0)),
+            0
+          ),
+        subtotalSinIVA: lineas
+          .filter(l => !l.pagaIVA)
+          .reduce(
+            (acc, l) =>
+              acc +
+              (l.precioUnitario * l.cantidad -
+                (l.descuento || 0)),
+            0
+          ),
+        ivaTotal: totals.iva,
+        valorTotal: totals.total
+      }
     };
 
-    try {
-      const res = await fetch(`${API_URL}/api/facturas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(factura)
-      });
+    console.log(factura);
 
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg);
-      }
+    const res = await fetch(`${API_URL}/api/facturas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(factura)
+    });
 
+    if (res.ok) {
       const data = await res.json();
-
       setFeedback({
         open: true,
-        message: `Factura N.º ${data.cabecera.numeroFactura} guardada correctamente`,
+        message: `Factura ${data.numeroFactura} guardada ✅`,
         severity: 'success'
       });
-
       setLineas([]);
-
-    } catch (err) {
+    } else {
+      const errMsg = await res.text();
       setFeedback({
         open: true,
-        message: `Error al guardar factura: ${err.message}`,
+        message: `Error al guardar: ${errMsg}`,
         severity: 'error'
       });
     }
@@ -205,7 +233,7 @@ export default function Factura() {
         Nueva Factura
       </Typography>
 
-      {/* DATOS DEL CLIENTE */}
+      {/* Datos del cliente */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} md={4}>
           <TextField
@@ -215,7 +243,10 @@ export default function Factura() {
             onChange={e =>
               setCabecera({
                 ...cabecera,
-                cliente: { ...cabecera.cliente, nombre: e.target.value }
+                cliente: {
+                  ...cabecera.cliente,
+                  nombre: e.target.value
+                }
               })
             }
           />
@@ -228,7 +259,10 @@ export default function Factura() {
             onChange={e =>
               setCabecera({
                 ...cabecera,
-                cliente: { ...cabecera.cliente, identificacion: e.target.value }
+                cliente: {
+                  ...cabecera.cliente,
+                  identificacion: e.target.value
+                }
               })
             }
           />
@@ -241,41 +275,21 @@ export default function Factura() {
             onChange={e =>
               setCabecera({
                 ...cabecera,
-                cliente: { ...cabecera.cliente, correoElectronico: e.target.value }
-              })
-            }
-          />
-
-          <TextField
-            label="Dirección *"
-            fullWidth
-            sx={{ mt: 2 }}
-            value={cabecera.cliente.direccion}
-            onChange={e =>
-              setCabecera({
-                ...cabecera,
-                cliente: { ...cabecera.cliente, direccion: e.target.value }
-              })
-            }
-          />
-
-          <TextField
-            label="Teléfono *"
-            fullWidth
-            sx={{ mt: 2 }}
-            value={cabecera.cliente.telefono}
-            onChange={e =>
-              setCabecera({
-                ...cabecera,
-                cliente: { ...cabecera.cliente, telefono: e.target.value }
+                cliente: {
+                  ...cabecera.cliente,
+                  correoElectronico: e.target.value
+                }
               })
             }
           />
         </Grid>
 
-        {/* DETALLE */}
         <Grid item xs={12} md={8}>
-          <Button variant="contained" onClick={addLinea} sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={addLinea}
+            sx={{ mb: 2 }}
+          >
             + Agregar Línea
           </Button>
 
@@ -289,13 +303,20 @@ export default function Factura() {
                 <TableCell>Desc.</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {lineas.map((l, i) => (
                 <TableRow key={i}>
                   <TableCell>
                     <Select
                       value={l.productoId}
-                      onChange={e => updateLinea(i, 'productoId', e.target.value)}
+                      onChange={e =>
+                        updateLinea(
+                          i,
+                          'productoId',
+                          e.target.value
+                        )
+                      }
                       fullWidth
                     >
                       {productos.map(p => (
@@ -310,19 +331,31 @@ export default function Factura() {
                     <TextField
                       type="number"
                       value={l.cantidad}
-                      onChange={e => updateLinea(i, 'cantidad', Number(e.target.value))}
+                      onChange={e =>
+                        updateLinea(
+                          i,
+                          'cantidad',
+                          Number(e.target.value)
+                        )
+                      }
                       fullWidth
                     />
                   </TableCell>
 
-                  <TableCell>${l.precioUnitario.toFixed(2)}</TableCell>
+                  <TableCell>${l.precioUnitario}</TableCell>
                   <TableCell>{l.pagaIVA ? 'Sí' : 'No'}</TableCell>
 
                   <TableCell>
                     <TextField
                       type="number"
                       value={l.descuento}
-                      onChange={e => updateLinea(i, 'descuento', Number(e.target.value))}
+                      onChange={e =>
+                        updateLinea(
+                          i,
+                          'descuento',
+                          Number(e.target.value)
+                        )
+                      }
                       fullWidth
                     />
                   </TableCell>
@@ -333,32 +366,46 @@ export default function Factura() {
         </Grid>
       </Grid>
 
-      {/* RESUMEN */}
+      {/* Resumen */}
       <Typography variant="h6">Resumen</Typography>
-      <Typography>Subtotal: ${totals.subtotal.toFixed(2)}</Typography>
+      <Typography>
+        Subtotal: ${totals.subtotal.toFixed(2)}
+      </Typography>
       <Typography>IVA: ${totals.iva.toFixed(2)}</Typography>
       <Typography>Total: ${totals.total.toFixed(2)}</Typography>
 
-      {/* FORMA DE PAGO */}
+      {/* Forma de pago */}
       <Select
         value={formaPago}
         onChange={e => setFormaPago(e.target.value)}
         sx={{ mt: 2 }}
       >
         <MenuItem value="Efectivo">Efectivo</MenuItem>
-        <MenuItem value="Tarjeta de Crédito">Tarjeta de Crédito</MenuItem>
-        <MenuItem value="Tarjeta de Débito">Tarjeta de Débito</MenuItem>
+        <MenuItem value="Tarjeta de Crédito">
+          Tarjeta de Crédito
+        </MenuItem>
+        <MenuItem value="Tarjeta de Débito">
+          Tarjeta de Débito
+        </MenuItem>
         <MenuItem value="Transferencia">Transferencia</MenuItem>
       </Select>
 
-      <Button variant="contained" sx={{ mt: 3 }} onClick={guardarFactura}>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mt: 3 }}
+        onClick={guardarFactura}
+      >
         Guardar Factura
       </Button>
 
+      {/* Feedback */}
       <Snackbar
         open={feedback.open}
         autoHideDuration={3000}
-        onClose={() => setFeedback({ ...feedback, open: false })}
+        onClose={() =>
+          setFeedback({ ...feedback, open: false })
+        }
       >
         <Alert severity={feedback.severity} sx={{ width: '100%' }}>
           {feedback.message}
