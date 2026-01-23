@@ -1,7 +1,26 @@
 import express from 'express';
 import { readList, writeList } from '../lib/storage.js'; // 👈 usa import
+import {generarAutorizacionMock} from  '../mocks/claveAcceso.mock.js';
 
 const router = express.Router();
+
+function validarPorcentajeIVA(valor) {
+  if (valor === undefined || valor === null || valor === '') {
+    throw new Error('El porcentaje de IVA es obligatorio');
+  }
+
+  const numero = Number(valor);
+
+  if (Number.isNaN(numero)) {
+    throw new TypeError('El porcentaje de IVA debe ser numérico');
+  }
+
+  if (numero < 0 || numero > 100) {
+    throw new Error('El porcentaje de IVA debe estar entre 0 y 100');
+  }
+
+  return numero;
+}
 
 /**
  * @swagger
@@ -130,7 +149,34 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'cabecera y detalle son requeridos' });
   }
 
-  const empresa = await readList('empresa');
+// Recuperar empresa
+const empresa = await readList('empresa');
+if (!empresa.length) {
+  return res.status(400).json({ error: 'No existe información de empresa' });
+}
+// Seleccionar solo los campos necesarios
+const empresaInfo = {
+  nombreEmpresa: empresa[0].nombreEmpresa,
+  nombreComercial: empresa[0].nombreComercial,
+  ruc: empresa[0].ruc,
+  telefono: empresa[0].telefono,
+  direccion: empresa[0].direccion,
+  puntoEmision: empresa[0].puntoEmision
+};
+// % del IVA
+let porcentajeIVA = 0; 
+try {
+  porcentajeIVA = validarPorcentajeIVA(empresa[0].porcentajeIVA) / 100;
+} catch (error) {
+  return res.status(400).json({ error: error.message });
+}
+
+const {
+  fecha,
+  formaPago,
+  cliente
+} = factura.cabecera;
+
   let numeroFacturaActual = empresa?.[0]?.numeroFactura || 0;
   const nuevoNumeroFactura = numeroFacturaActual + 1;
 
@@ -149,16 +195,37 @@ router.post('/', async (req, res) => {
     .filter(d => !d.pagaIVA)
     .reduce((acc, d) => acc + (d.precioTotal || d.cantidad * d.precioUnitario), 0);
 
-  const valorTotal = subtotalConIVA + subtotalSinIVA;
+  const ivaTotal = subtotalConIVA * porcentajeIVA;
+  const valorTotal = subtotalConIVA + subtotalSinIVA + ivaTotal;
+  
+  const {
+    claveAcceso,
+    estado,
+    numeroAutorizacion,
+    fechaAutorizacion,
+    ambiente
+    } = generarAutorizacionMock();
+
 
   const newFactura = {
     id,
-    numeroFactura: nuevoNumeroFactura,
-    cabecera: factura.cabecera,
+    empresa: empresaInfo,
+    cliente,
+    cabecera: {
+      numeroFactura: nuevoNumeroFactura,
+      claveAcceso,
+      estado,
+      numeroAutorizacion,
+      fechaAutorizacion,
+      ambiente,
+      fecha,
+      formaPago
+    },
     detalle: factura.detalle,
     totales: {
       subtotalConIVA,
       subtotalSinIVA,
+      ivaTotal,
       valorTotal
     },
     audit: {

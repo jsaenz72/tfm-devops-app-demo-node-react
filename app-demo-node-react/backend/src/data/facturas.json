@@ -1,225 +1,65 @@
 [
   {
-    "id": 1,
-    "numeroFactura": 103,
+    "id": 13,
+    "empresa": {
+      "nombreEmpresa": "SAGA CONSULTORES Y SERVICIOS",
+      "nombreComercial": "SAGA",
+      "ruc": "1792074037003",
+      "telefono": "0998548622",
+      "direccion": "ECUADOR/PICHINCHA/QUITO/LA LUZ",
+      "puntoEmision": "001"
+    },
+    "cliente": {
+      "identificacion": "1712140555",
+      "nombre": "JAIME",
+      "direccion": "Pasaje E6D N49-129 y Luis Calisto",
+      "telefono": "0986174365",
+      "correoElectronico": "jsaenz72@hotmail.com"
+    },
     "cabecera": {
-      "empresa": {
-        "ruc": "",
-        "numeroAutorizacion": "",
-        "ambiente": "Producción",
-        "nombreEmpresa": "Mi Empresa S.A.",
-        "nombreCorto": "MiEmpresa",
-        "direccion": "Av. Principal 123",
-        "porcentajeIVA": 12
-      },
-      "cliente": {
-        "identificacion": "1712140555",
-        "nombre": "SAGA CONSULTORES Y SERVICIOS",
-        "direccion": "",
-        "telefono": "",
-        "correoElectronico": "jsaenz72@hotmail.com"
-      },
-      "numeroFactura": "",
-      "fecha": "2026-01-03",
-      "formaPago": "Tarjeta de Crédito"
-    },
-    "detalle": [
-      {
-        "codigo": 1,
-        "cantidad": 1,
-        "descripcion": "TECLADO",
-        "precioUnitario": 100.2,
-        "pagaIVA": true,
-        "precioTotal": 100.2
-      },
-      {
-        "codigo": 2,
-        "cantidad": 1,
-        "descripcion": "MOUSE",
-        "precioUnitario": 12,
-        "pagaIVA": true,
-        "precioTotal": 12
-      },
-      {
-        "codigo": 3,
-        "cantidad": 1,
-        "descripcion": "TABLET",
-        "precioUnitario": 123,
-        "pagaIVA": true,
-        "precioTotal": 123
-      },
-      {
-        "codigo": "",
-        "cantidad": 1,
-        "descripcion": "",
-        "precioUnitario": 0,
-        "pagaIVA": false,
-        "precioTotal": 0
-      },
-      {
-        "codigo": "",
-        "cantidad": 1,
-        "descripcion": "",
-        "precioUnitario": 0,
-        "pagaIVA": false,
-        "precioTotal": 0
-      },
-      {
-        "codigo": "",
-        "cantidad": 1,
-        "descripcion": "",
-        "precioUnitario": 0,
-        "pagaIVA": false,
-        "precioTotal": 0
-      }
-    ],
-    "totales": {
-      "subtotalConIVA": 235.2,
-      "subtotalSinIVA": 0,
-      "valorTotal": 235.2
-    },
-    "audit": {
-      "fechaCreacion": "2026-01-03T22:33:27.073Z",
-      "usuarioCreacion": "system",
-      "fechaActualizacion": null,
-      "usuarioActualizacion": null
-    }
-  },
-  {
-    "id": 2,
-    "numeroFactura": 104,
-    "cabecera": {
-      "empresa": {
-        "ruc": "",
-        "numeroAutorizacion": "",
-        "ambiente": "Producción",
-        "nombreEmpresa": "Mi Empresa S.A.",
-        "nombreCorto": "MiEmpresa",
-        "direccion": "Av. Principal 123",
-        "porcentajeIVA": 12
-      },
-      "cliente": {
-        "identificacion": "1712140555",
-        "nombre": "SAGA CONSULTORES Y SERVICIOS",
-        "direccion": "",
-        "telefono": "",
-        "correoElectronico": "jsaenz72@hotmail.com"
-      },
-      "numeroFactura": "",
-      "fecha": "2026-01-03",
-      "formaPago": "Tarjeta de Crédito"
-    },
-    "detalle": [
-      {
-        "codigo": 1,
-        "cantidad": 1,
-        "descripcion": "TECLADO",
-        "precioUnitario": 100.2,
-        "pagaIVA": true,
-        "precioTotal": 100.2
-      },
-      {
-        "codigo": 1,
-        "cantidad": 1,
-        "descripcion": "TECLADO",
-        "precioUnitario": 100.2,
-        "pagaIVA": true,
-        "precioTotal": 100.2
-      },
-      {
-        "codigo": 2,
-        "cantidad": 1,
-        "descripcion": "MOUSE",
-        "precioUnitario": 12,
-        "pagaIVA": true,
-        "precioTotal": 12
-      },
-      {
-        "codigo": 3,
-        "cantidad": 1,
-        "descripcion": "TABLET",
-        "precioUnitario": 123,
-        "pagaIVA": true,
-        "precioTotal": 123
-      }
-    ],
-    "totales": {
-      "subtotalConIVA": 335.4,
-      "subtotalSinIVA": 0,
-      "valorTotal": 335.4
-    },
-    "audit": {
-      "fechaCreacion": "2026-01-03T22:33:38.401Z",
-      "usuarioCreacion": "system",
-      "fechaActualizacion": null,
-      "usuarioActualizacion": null
-    }
-  },
-  {
-    "id": 3,
-    "numeroFactura": 105,
-    "cabecera": {
-      "empresa": {
-        "ruc": "",
-        "numeroAutorizacion": "",
-        "ambiente": "Producción",
-        "nombreEmpresa": "Mi Empresa S.A.",
-        "nombreCorto": "MiEmpresa",
-        "direccion": "Av. Principal 123",
-        "porcentajeIVA": 12
-      },
-      "cliente": {
-        "identificacion": "1712140555",
-        "nombre": "ERNESTO BURBANO",
-        "direccion": "",
-        "telefono": "",
-        "correoElectronico": "jsaenz72@hotmail.com"
-      },
-      "numeroFactura": "",
-      "fecha": "2026-01-03",
+      "numeroFactura": 126,
+      "claveAcceso": "0912202501171214055500120010080006776212345610001",
+      "estado": "AUTORIZADO",
+      "numeroAutorizacion": "0912202501171214055500120010080006776212345610001",
+      "fechaAutorizacion": "2026-01-23T01:57:42.254Z",
+      "ambiente": "PRODUCCIÓN",
+      "fecha": "2026-01-23",
       "formaPago": "Efectivo"
     },
     "detalle": [
       {
         "codigo": 1,
-        "cantidad": 7,
+        "cantidad": 111,
         "descripcion": "TECLADO",
         "precioUnitario": 100.2,
         "pagaIVA": false,
-        "precioTotal": 701.4
+        "precioTotal": 11122.2
       },
       {
         "codigo": 2,
-        "cantidad": 4,
+        "cantidad": 111,
         "descripcion": "MOUSE",
         "precioUnitario": 12,
         "pagaIVA": true,
-        "precioTotal": 48
-      },
-      {
-        "codigo": 2,
-        "cantidad": 5,
-        "descripcion": "MOUSE",
-        "precioUnitario": 12,
-        "pagaIVA": true,
-        "precioTotal": 60
+        "precioTotal": 1332
       },
       {
         "codigo": 3,
-        "cantidad": 5,
+        "cantidad": 111,
         "descripcion": "TABLET",
         "precioUnitario": 123,
         "pagaIVA": true,
-        "precioTotal": 615
+        "precioTotal": 13653
       }
     ],
     "totales": {
-      "subtotalConIVA": 723,
-      "subtotalSinIVA": 701.4,
-      "valorTotal": 1424.4
+      "subtotalConIVA": 14985,
+      "subtotalSinIVA": 11122.2,
+      "ivaTotal": 2247.75,
+      "valorTotal": 28354.95
     },
     "audit": {
-      "fechaCreacion": "2026-01-03T23:20:48.871Z",
+      "fechaCreacion": "2026-01-23T01:57:42.253Z",
       "usuarioCreacion": "system",
       "fechaActualizacion": null,
       "usuarioActualizacion": null

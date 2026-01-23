@@ -6,7 +6,7 @@ const router = express.Router();
 /**
  * Función de validación reutilizable (TESTEABLE)
  */
-function validarEmpresa(data) {
+export function validarEmpresa(data) {
   const camposRequeridos = [
     'nombreEmpresa',
     'nombreComercial',

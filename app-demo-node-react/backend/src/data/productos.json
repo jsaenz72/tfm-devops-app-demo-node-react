@@ -22,5 +22,13 @@
     "precioUnitario": 123,
     "infoAdicional": "TABLET ALTA DEFINICIÓN",
     "pagaIVA": true
+  },
+  {
+    "id": 4,
+    "codigo": "P001",
+    "nombre": "Producto Test",
+    "precioUnitario": 10,
+    "infoAdicional": "",
+    "pagaIVA": true
   }
 ]
