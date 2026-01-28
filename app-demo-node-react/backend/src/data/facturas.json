@@ -64,5 +64,63 @@
       "fechaActualizacion": null,
       "usuarioActualizacion": null
     }
+  },
+  {
+    "id": 14,
+    "empresa": {
+      "nombreEmpresa": "Empresa E2E",
+      "nombreComercial": "Comercial E2E",
+      "ruc": "0999999999",
+      "telefono": "099999999",
+      "direccion": "Quito",
+      "puntoEmision": "001"
+    },
+    "cliente": {
+      "identificacion": "1712140555",
+      "nombre": "JAIME",
+      "direccion": "Pasaje E6D N49-129 y Luis Calisto",
+      "telefono": "0986174365",
+      "correoElectronico": "jsaenz72@hotmail.com"
+    },
+    "cabecera": {
+      "numeroFactura": 2,
+      "claveAcceso": "0912202501171214055500120010080006776212345610001",
+      "estado": "AUTORIZADO",
+      "numeroAutorizacion": "0912202501171214055500120010080006776212345610001",
+      "fechaAutorizacion": "2026-01-27T01:59:26.269Z",
+      "ambiente": "PRODUCCIÓN",
+      "fecha": "2026-01-27",
+      "formaPago": "Efectivo"
+    },
+    "detalle": [
+      {
+        "codigo": 5,
+        "cantidad": 1,
+        "descripcion": "Sin precio",
+        "precioUnitario": 0,
+        "pagaIVA": true,
+        "precioTotal": 0
+      },
+      {
+        "codigo": 3,
+        "cantidad": 10000,
+        "descripcion": "TABLET",
+        "precioUnitario": 123,
+        "pagaIVA": true,
+        "precioTotal": 1230000
+      }
+    ],
+    "totales": {
+      "subtotalConIVA": 1230000,
+      "subtotalSinIVA": 0,
+      "ivaTotal": 147600,
+      "valorTotal": 1377600
+    },
+    "audit": {
+      "fechaCreacion": "2026-01-27T01:59:26.269Z",
+      "usuarioCreacion": "system",
+      "fechaActualizacion": null,
+      "usuarioActualizacion": null
+    }
   }
 ]

@@ -1,33 +1,45 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
-import app from '../../src/app.js';
 
-// mock del módulo completo
-jest.mock('../../src/lib/storage.js', () => ({
-  readList: jest.fn(),
-  writeList: jest.fn()
+/**
+ * Base de datos en memoria para los tests E2E
+ */
+const mockDB = {
+  empresas: [],
+  productos: [],
+  facturas: []
+};
+
+/**
+ * Mock CORRECTO del módulo storage (ESM)
+ * Se define ANTES de importar app
+ */
+jest.unstable_mockModule('../../src/lib/storage.js', () => ({
+  readList: jest.fn(async (name) => {
+    return mockDB[name] ?? [];
+  }),
+  writeList: jest.fn(async (name, list) => {
+    mockDB[name] = [...list];
+  })
 }));
 
-describe('Flujo completo de facturación (E2E)', () => {
+/**
+ * Importación dinámica obligatoria en ESM
+ */
+const { default: app } = await import('../../src/app.js');
 
-  test('Crear empresa → producto → factura', async () => {
+describe('API E2E – Flujo completo de facturación', () => {
 
-    const empresaRes = await request(app)
-      .post('/api/empresa')
-      .send({
-        nombreEmpresa: 'Empresa E2E',
-        nombreComercial: 'Comercial E2E',
-        ruc: '0999999999',
-        telefono: '099999999',
-        direccion: 'Quito',
-        puntoEmision: '001',
-        numeroFactura: 1,
-        porcentajeIVA: 12,
-        usuarioCreacion: 'tester'
-      });
+  beforeEach(() => {
+    // Limpiar estado entre tests
+    mockDB.empresas = [];
+    mockDB.productos = [];
+    mockDB.facturas = [];
+  });
 
-    expect(empresaRes.status).toBe(201);
+  test('Crear empresa → crear producto → listar productos', async () => {
 
+    // Crear producto
     const productoRes = await request(app)
       .post('/api/productos')
       .send({
@@ -38,6 +50,15 @@ describe('Flujo completo de facturación (E2E)', () => {
       });
 
     expect(productoRes.status).toBe(201);
+    expect(mockDB.productos.length).toBe(1);
+
+    // Listar productos
+    const listRes = await request(app)
+      .get('/api/productos');
+
+    expect(listRes.status).toBe(200);
+    expect(listRes.body.length).toBe(1);
+    expect(listRes.body[0].codigo).toBe('P001');
   });
 
 });

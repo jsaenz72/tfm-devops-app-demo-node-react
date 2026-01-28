@@ -20,7 +20,9 @@ const app = express();
    MIDDLEWARES
 ===================================== */
 app.use(cors());
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(express.json());
+
 
 /* =====================================
    CONFIGURACIÓN DE SWAGGER

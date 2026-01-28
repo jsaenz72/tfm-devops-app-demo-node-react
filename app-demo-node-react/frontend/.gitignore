@@ -1,0 +1,32 @@
+# Dependencias
+node_modules/
+
+# Builds y artefactos
+dist/
+build/
+
+# Archivos de entorno
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Herramientas de editor
+.vscode/
+.idea/
+*.swp
+
+# Coverage de tests
+coverage/
+
+# Cache de herramientas
+.cache/

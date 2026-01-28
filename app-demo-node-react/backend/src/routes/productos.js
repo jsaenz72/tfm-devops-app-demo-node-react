@@ -176,4 +176,4 @@ router.delete('/:id', async (req, res) => {
   res.json(deleted);
 });
 
-export default router; // 👈 clave: export default
+export default router;

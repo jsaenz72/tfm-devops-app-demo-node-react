@@ -5,7 +5,6 @@ export default {
     '**/tests/**/*.test.js'
   ],
 
-
   transform: {},
 
   collectCoverage: true,

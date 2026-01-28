@@ -1,5 +1,7 @@
 FROM node:18-alpine
 WORKDIR /app
+# Actualizamos paquetes del sistema para eliminar CVEs conocidos 
+RUN apk update && apk upgrade --no-cache
 # Copiamos package.json y lockfile
 COPY package*.json ./
 # Instalamos TODAS las dependencias (incluyendo dev)

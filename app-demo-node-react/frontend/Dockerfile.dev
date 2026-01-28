@@ -1,5 +1,7 @@
 FROM node:18-alpine
 WORKDIR /app
+# Actualizamos paquetes del sistema para eliminar CVEs conocidos 
+RUN apk update && apk upgrade --no-cache
 
 COPY package*.json ./
 RUN npm ci

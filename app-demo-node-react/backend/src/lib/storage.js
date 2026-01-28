@@ -6,10 +6,13 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Carpeta de datos
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
+// Si estamos en modo test, usar sufijo ".test.json"
 function filePath(name) {
-  return path.join(DATA_DIR, `${name}.json`);
+  const suffix = process.env.NODE_ENV === 'test' ? '.test.json' : '.json';
+  return path.join(DATA_DIR, `${name}${suffix}`);
 }
 
 /**

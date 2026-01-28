@@ -1,0 +1,52 @@
+# ================================
+# ETAPA 1: BUILD (builder)
+# ================================
+
+# Imagen base con Node.js 18 (LTS) sobre Alpine Linux
+# Se usa solo para construir la aplicación
+FROM node:18-alpine AS builder
+
+# Definimos el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiamos únicamente los archivos de dependencias
+# Esto permite aprovechar la caché de Docker
+COPY package.json package-lock.json ./
+
+# Instalamos dependencias de forma determinística
+# npm ci garantiza builds reproducibles usando package-lock.json
+RUN npm ci
+
+# Copiamos el resto del código fuente de la aplicación
+COPY . .
+
+# Ejecutamos el paso de build si existe
+# Si el proyecto no tiene script build, no falla la imagen
+RUN npm run build || echo "No build step"
+
+
+# ================================
+# ETAPA 2: RUNTIME (producción)
+# ================================
+
+# Imagen base mínima para ejecutar la aplicación
+# No incluye herramientas de compilación
+FROM node:18-alpine
+
+# Definimos el directorio de trabajo
+WORKDIR /app
+
+# Copiamos únicamente el resultado final desde la etapa builder
+# Esto reduce el tamaño de la imagen y la superficie de ataque
+COPY --from=builder /app /app
+
+# Definimos el entorno como producción
+# Activa optimizaciones y desactiva dependencias de desarrollo
+ENV NODE_ENV=production
+
+# Documentamos el puerto en el que escucha la aplicación
+EXPOSE 3000
+
+# Comando por defecto para iniciar el backend
+# Se usa formato JSON para evitar problemas de shell
+CMD ["node", "src/index.js"]

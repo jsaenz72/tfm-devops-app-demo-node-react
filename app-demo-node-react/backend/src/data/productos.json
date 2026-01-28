@@ -1,13 +1,5 @@
 [
   {
-    "id": 1,
-    "codigo": "001",
-    "nombre": "TECLADO",
-    "precioUnitario": 100.2,
-    "infoAdicional": "NINGUNA",
-    "pagaIVA": false
-  },
-  {
     "id": 2,
     "codigo": "002",
     "nombre": "MOUSE",
@@ -28,7 +20,39 @@
     "codigo": "P001",
     "nombre": "Producto Test",
     "precioUnitario": 10,
+    "infoAdicional": "Producto de prueba",
+    "pagaIVA": true
+  },
+  {
+    "id": 5,
+    "codigo": "P002",
+    "nombre": "Sin precio",
+    "precioUnitario": 0,
     "infoAdicional": "",
+    "pagaIVA": true
+  },
+  {
+    "id": 6,
+    "codigo": "P003",
+    "nombre": "Producto listado",
+    "precioUnitario": 20,
+    "infoAdicional": "Test",
+    "pagaIVA": false
+  },
+  {
+    "id": 7,
+    "codigo": "0101",
+    "nombre": "PRODUCTO 0101",
+    "precioUnitario": 1000,
+    "infoAdicional": "PRODUCTO 0101",
+    "pagaIVA": true
+  },
+  {
+    "id": 8,
+    "codigo": "0102",
+    "nombre": "PRODUCTO 0102",
+    "precioUnitario": 1000,
+    "infoAdicional": "PRODUCTO 0101",
     "pagaIVA": true
   }
 ]
