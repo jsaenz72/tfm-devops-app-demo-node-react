@@ -98,21 +98,33 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
           format: table
           exit-code: 0
-
+          
       # -------------------------------
       # SBOM - CycloneDX
       # -------------------------------
-      - name: Generate SBOM (CycloneDX)
-        uses: CycloneDX/gh-action-node@v2
+      - name: Generate SBOM backend (CycloneDX)
+        uses: CycloneDX/cyclonedx-github-actions@v2
         with:
-          path: .
-          output: sbom.xml
+          path: backend
+          output: sbom-backend.xml
 
-      - name: Upload SBOM artifact
+      - name: Upload SBOM backend artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-cyclonedx
-          path: sbom.xml
+          name: sbom-backend-cyclonedx
+          path: sbom-backend.xml
+
+      - name: Generate SBOM frontend (CycloneDX)
+        uses: CycloneDX/cyclonedx-github-actions@v2
+        with:
+          path: frontend
+          output: sbom-frontend.xml
+
+      - name: Upload SBOM frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-frontend-cyclonedx
+          path: sbom-frontend.xml
 
       # -------------------------------
       # Supply Chain - Cosign (keyless)
