@@ -1,10 +1,10 @@
-name: CI - Build, Security & Supply Chain v2
-
+name: CI - Build, Security & Supply Chain (DEV)
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -13,15 +13,22 @@ env:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
       id-token: write
 
     steps:
+      # -------------------------------
+      # Checkout
+      # -------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # -------------------------------
+      # Node.js setup
+      # -------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -34,7 +41,7 @@ jobs:
         working-directory: backend
         run: npm install
 
-      - name: Build backend
+      - name: Build backend (dev)
         working-directory: backend
         run: npm run build || true
 
@@ -42,12 +49,12 @@ jobs:
         working-directory: frontend
         run: npm install
 
-      - name: Build frontend
+      - name: Build frontend (dev)
         working-directory: frontend
         run: npm run build
 
       # -------------------------------
-      # Docker
+      # Docker - Login GHCR
       # -------------------------------
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -56,18 +63,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      # -------------------------------
+      # Docker - Build & Push (DEV)
+      # -------------------------------
+      - name: Build & push backend image (dev)
         run: |
-          docker build -t $REGISTRY/${IMAGE_NAME}:${{ github.sha }} .
-          docker push $REGISTRY/${IMAGE_NAME}:${{ github.sha }}
+          docker build \
+            -f backend/Dockerfile.dev \
+            -t $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }} \
+            backend
+          docker push $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+
+      - name: Build & push frontend image (dev)
+        run: |
+          docker build \
+            -f frontend/Dockerfile.dev \
+            -t $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }} \
+            frontend
+          docker push $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
 
       # -------------------------------
       # Security - Trivy
       # -------------------------------
-      - name: Trivy vulnerability scan
+      - name: Trivy scan backend image (dev)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:dev-${{ github.sha }}
+          format: table
+          exit-code: 0
+
+      - name: Trivy scan frontend image (dev)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
           format: table
           exit-code: 0
 
@@ -86,6 +114,8 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
-      - name: Sign Docker image
-        run: |
-          cosign sign $REGISTRY/${IMAGE_NAME}:${{ github.sha }}
+      - name: Sign backend image (dev)
+        run: cosign sign $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+
+      - name: Sign frontend image (dev)
+        run: cosign sign $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
