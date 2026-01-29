@@ -1,138 +1,191 @@
-  name: CI - Build, Security & Supply Chain (DEV) v1
+name: CI/CD Pipeline
 
-  on:
-    push:
-      branches:
-        - main
-    workflow_dispatch:
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
 
-  env:
-    REGISTRY: ghcr.io
-    IMAGE_NAME: jsaenz72/tfm-devops-app-demo-node-react
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
 
-  jobs:
-    ci:
-      runs-on: ubuntu-latest
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
 
-      permissions:
-        contents: read
-        packages: write
-        id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      steps:
-        # -------------------------------
-        # Checkout
-        # -------------------------------
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'app-demo-node-react/backend/package-lock.json'
 
-        # -------------------------------
-        # Node.js setup
-        # -------------------------------
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: 18
+      # ============================
+      # BACKEND BUILD
+      # ============================
+      - name: Install backend dependencies
+        working-directory: app-demo-node-react/backend
+        run: npm ci
 
-        # -------------------------------
-        # Build & Tests (DEV)
-        # -------------------------------
-        - name: Install backend dependencies
-          working-directory: backend
-          run: npm install
+      - name: Run backend tests
+        working-directory: app-demo-node-react/backend
+        run: npm test -- --passWithNoTests
 
-        - name: Build backend (dev)
-          working-directory: backend
-          run: npm run build || true
+      # ============================
+      # FRONTEND BUILD
+      # ============================
+      - name: Install frontend dependencies
+        working-directory: app-demo-node-react/frontend
+        run: npm ci
 
-        - name: Install frontend dependencies
-          working-directory: frontend
-          run: npm install
+      - name: Build frontend
+        working-directory: app-demo-node-react/frontend
+        run: npm run build
 
-        - name: Build frontend (dev)
-          working-directory: frontend
-          run: npm run build
+      # ============================
+      # DOCKER - BACKEND
+      # ============================
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-        # -------------------------------
-        # Docker - Login GHCR
-        # -------------------------------
-        - name: Login to GitHub Container Registry
-          uses: docker/login-action@v3
-          with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-        # -------------------------------
-        # Docker - Build & Push (DEV)
-        # -------------------------------
-        - name: Build & push backend image (dev)
-          run: |
-            docker build \
-              -f backend/Dockerfile.dev \
-              -t $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }} \
-              backend
-            docker push $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: app-demo-node-react/backend
+          file: app-demo-node-react/backend/Dockerfile.dev
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
 
-        - name: Build & push frontend image (dev)
-          run: |
-            docker build \
-              -f frontend/Dockerfile.dev \
-              -t $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }} \
-              frontend
-            docker push $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
+      # ============================
+      # DOCKER - FRONTEND
+      # ============================
+      - name: Extract metadata for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
-        # -------------------------------
-        # Security - Trivy
-        # -------------------------------
-        - name: Trivy scan backend image (dev)
-          uses: aquasecurity/trivy-action@0.24.0
-          with:
-            image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:dev-${{ github.sha }}
-            format: table
-            exit-code: 0
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: app-demo-node-react/frontend
+          file: app-demo-node-react/frontend/Dockerfile.dev
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
 
-        - name: Trivy scan frontend image (dev)
-          uses: aquasecurity/trivy-action@0.24.0
-          with:
-            image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
-            format: table
-            exit-code: 0
+      # ============================
+      # SECURITY SCAN - BACKEND
+      # ============================
+      - name: Run Trivy vulnerability scanner - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
 
-        # -------------------------------
-        # SBOM - CycloneDX
-        # -------------------------------
-        - name: Install CycloneDX CLI
-          run: npm install -g @cyclonedx/cyclonedx-npm
+      - name: Upload Trivy results to GitHub Security - Backend
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend'
 
-        - name: Generate SBOM backend (CycloneDX)
-          working-directory: backend
-          run: cyclonedx-npm --output-file ../sbom-backend.xml
+      # ============================
+      # SECURITY SCAN - FRONTEND
+      # ============================
+      - name: Run Trivy vulnerability scanner - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
 
-        - name: Upload SBOM backend artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: sbom-backend-cyclonedx
-            path: sbom-backend.xml
+      - name: Upload Trivy results to GitHub Security - Frontend
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend'
 
-        - name: Generate SBOM frontend (CycloneDX)
-          working-directory: frontend
-          run: cyclonedx-npm --output-file ../sbom-frontend.xml
+      # ============================
+      # SBOM GENERATION - BACKEND
+      # ============================
+      - name: Generate SBOM for Backend
+        working-directory: app-demo-node-react/backend
+        run: |
+          npm install -g @cyclonedx/cyclonedx-npm
+          cyclonedx-npm --output-file backend-sbom.json
 
-        - name: Upload SBOM frontend artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: sbom-frontend-cyclonedx
-            path: sbom-frontend.xml
+      - name: Upload Backend SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-sbom
+          path: app-demo-node-react/backend/backend-sbom.json
 
-        # -------------------------------
-        # Supply Chain - Cosign (keyless)
-        # -------------------------------
-        - name: Install Cosign
-          uses: sigstore/cosign-installer@v3
+      # ============================
+      # SBOM GENERATION - FRONTEND
+      # ============================
+      - name: Generate SBOM for Frontend
+        working-directory: app-demo-node-react/frontend
+        run: |
+          npm install -g @cyclonedx/cyclonedx-npm
+          cyclonedx-npm --output-file frontend-sbom.json
 
-        - name: Sign backend image (dev)
-          run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+      - name: Upload Frontend SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-sbom
+          path: app-demo-node-react/frontend/frontend-sbom.json
 
-        - name: Sign frontend image (dev)
-          run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
+      # ============================
+      # IMAGE SIGNING - BACKEND
+      # ============================
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign Backend container image
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.meta-backend.outputs.digest }}
+
+      # ============================
+      # IMAGE SIGNING - FRONTEND
+      # ============================
+      - name: Sign Frontend container image
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.meta-frontend.outputs.digest }}
