@@ -1,139 +1,138 @@
-name: CI - Build, Security & Supply Chain (DEV) v1
+  name: CI - Build, Security & Supply Chain (DEV) v1
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  on:
+    push:
+      branches:
+        - main
+    workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: jsaenz72/tfm-devops-app-demo-node-react
+  env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: jsaenz72/tfm-devops-app-demo-node-react
 
-jobs:
-  ci:
-    runs-on: ubuntu-latest
+  jobs:
+    ci:
+      runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
+      permissions:
+        contents: read
+        packages: write
+        id-token: write
 
-    steps:
-      # -------------------------------
-      # Checkout
-      # -------------------------------
-      - name: Checkout code
-        uses: actions/checkout@v4
+      steps:
+        # -------------------------------
+        # Checkout
+        # -------------------------------
+        - name: Checkout code
+          uses: actions/checkout@v4
 
-      # -------------------------------
-      # Node.js setup
-      # -------------------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+        # -------------------------------
+        # Node.js setup
+        # -------------------------------
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: 18
 
-      # -------------------------------
-      # Build & Tests (DEV)
-      # -------------------------------
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm install
+        # -------------------------------
+        # Build & Tests (DEV)
+        # -------------------------------
+        - name: Install backend dependencies
+          working-directory: backend
+          run: npm install
 
-      - name: Build backend (dev)
-        working-directory: backend
-        run: npm run build || true
+        - name: Build backend (dev)
+          working-directory: backend
+          run: npm run build || true
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm install
+        - name: Install frontend dependencies
+          working-directory: frontend
+          run: npm install
 
-      - name: Build frontend (dev)
-        working-directory: frontend
-        run: npm run build
+        - name: Build frontend (dev)
+          working-directory: frontend
+          run: npm run build
 
-      # -------------------------------
-      # Docker - Login GHCR
-      # -------------------------------
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        # -------------------------------
+        # Docker - Login GHCR
+        # -------------------------------
+        - name: Login to GitHub Container Registry
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
-      # -------------------------------
-      # Docker - Build & Push (DEV)
-      # -------------------------------
-      - name: Build & push backend image (dev)
-        run: |
-          docker build \
-            -f backend/Dockerfile.dev \
-            -t $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }} \
-            backend
-          docker push $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+        # -------------------------------
+        # Docker - Build & Push (DEV)
+        # -------------------------------
+        - name: Build & push backend image (dev)
+          run: |
+            docker build \
+              -f backend/Dockerfile.dev \
+              -t $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }} \
+              backend
+            docker push $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
 
-      - name: Build & push frontend image (dev)
-        run: |
-          docker build \
-            -f frontend/Dockerfile.dev \
-            -t $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }} \
-            frontend
-          docker push $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
+        - name: Build & push frontend image (dev)
+          run: |
+            docker build \
+              -f frontend/Dockerfile.dev \
+              -t $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }} \
+              frontend
+            docker push $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
 
-      # -------------------------------
-      # Security - Trivy
-      # -------------------------------
-      - name: Trivy scan backend image (dev)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:dev-${{ github.sha }}
-          format: table
-          exit-code: 0
+        # -------------------------------
+        # Security - Trivy
+        # -------------------------------
+        - name: Trivy scan backend image (dev)
+          uses: aquasecurity/trivy-action@0.24.0
+          with:
+            image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:dev-${{ github.sha }}
+            format: table
+            exit-code: 0
 
-      - name: Trivy scan frontend image (dev)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
-          format: table
-          exit-code: 0
+        - name: Trivy scan frontend image (dev)
+          uses: aquasecurity/trivy-action@0.24.0
+          with:
+            image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
+            format: table
+            exit-code: 0
 
-      # -------------------------------
-      # SBOM - CycloneDX
-      # -------------------------------
-      - name: Generate SBOM backend (CycloneDX)
-        uses: CycloneDX/gh-node-action@v2
-        with:
-          path: backend
-          output: sbom-backend.xml
+        # -------------------------------
+        # SBOM - CycloneDX
+        # -------------------------------
+        - name: Install CycloneDX CLI
+          run: npm install -g @cyclonedx/cyclonedx-npm
 
-      - name: Upload SBOM backend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-backend-cyclonedx
-          path: sbom-backend.xml
+        - name: Generate SBOM backend (CycloneDX)
+          working-directory: backend
+          run: cyclonedx-npm --output-file ../sbom-backend.xml
 
-      - name: Generate SBOM frontend (CycloneDX)
-        uses: CycloneDX/gh-node-action@v2
-        with:
-          path: frontend
-          output: sbom-frontend.xml
+        - name: Upload SBOM backend artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: sbom-backend-cyclonedx
+            path: sbom-backend.xml
 
-      - name: Upload SBOM frontend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-frontend-cyclonedx
-          path: sbom-frontend.xml
+        - name: Generate SBOM frontend (CycloneDX)
+          working-directory: frontend
+          run: cyclonedx-npm --output-file ../sbom-frontend.xml
 
-      # -------------------------------
-      # Supply Chain - Cosign (keyless)
-      # -------------------------------
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3
+        - name: Upload SBOM frontend artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: sbom-frontend-cyclonedx
+            path: sbom-frontend.xml
 
-      - name: Sign backend image (dev)
-        run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+        # -------------------------------
+        # Supply Chain - Cosign (keyless)
+        # -------------------------------
+        - name: Install Cosign
+          uses: sigstore/cosign-installer@v3
 
-      - name: Sign frontend image (dev)
-        run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
+        - name: Sign backend image (dev)
+          run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+
+        - name: Sign frontend image (dev)
+          run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
