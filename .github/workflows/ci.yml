@@ -109,6 +109,15 @@ jobs:
           output: sbom.xml
 
       # -------------------------------
+      # SBOM - CycloneDX
+      # -------------------------------
+      - name: Generate SBOM (CycloneDX)
+        uses: CycloneDX/gh-action-node@v2
+        with:
+          path: .
+          output: sbom.xml
+          
+      # -------------------------------
       # Supply Chain - Cosign
       # -------------------------------
       - name: Install Cosign
