@@ -1,4 +1,4 @@
-name: CI - Build, Security & Supply Chain (DEV)
+name: CI - Build, Security & Supply Chain (DEV) v1
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           node-version: 18
 
       # -------------------------------
-      # Build & Tests
+      # Build & Tests (DEV)
       # -------------------------------
       - name: Install backend dependencies
         working-directory: backend
@@ -86,14 +86,14 @@ jobs:
       # Security - Trivy
       # -------------------------------
       - name: Trivy scan backend image (dev)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:dev-${{ github.sha }}
           format: table
           exit-code: 0
 
       - name: Trivy scan frontend image (dev)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
           format: table
@@ -108,23 +108,20 @@ jobs:
           path: .
           output: sbom.xml
 
-      # -------------------------------
-      # SBOM - CycloneDX
-      # -------------------------------
-      - name: Generate SBOM (CycloneDX)
-        uses: CycloneDX/gh-action-node@v2
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: .
-          output: sbom.xml
-          
+          name: sbom-cyclonedx
+          path: sbom.xml
+
       # -------------------------------
-      # Supply Chain - Cosign
+      # Supply Chain - Cosign (keyless)
       # -------------------------------
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Sign backend image (dev)
-        run: cosign sign $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
+        run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-backend:dev-${{ github.sha }}
 
       - name: Sign frontend image (dev)
-        run: cosign sign $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
+        run: cosign sign --yes $REGISTRY/${IMAGE_NAME}-frontend:dev-${{ github.sha }}
