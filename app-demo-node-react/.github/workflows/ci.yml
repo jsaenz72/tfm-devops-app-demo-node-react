@@ -1,4 +1,5 @@
-name: CI - Build, Security & Supply Chain
+name: CI - Build, Security & Supply Chain v2
+
 
 on:
   push:
