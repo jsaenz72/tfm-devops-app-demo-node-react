@@ -98,12 +98,12 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:dev-${{ github.sha }}
           format: table
           exit-code: 0
-          
+
       # -------------------------------
       # SBOM - CycloneDX
       # -------------------------------
       - name: Generate SBOM backend (CycloneDX)
-        uses: CycloneDX/cyclonedx-github-actions@v2
+        uses: CycloneDX/gh-node-action@v2
         with:
           path: backend
           output: sbom-backend.xml
@@ -115,7 +115,7 @@ jobs:
           path: sbom-backend.xml
 
       - name: Generate SBOM frontend (CycloneDX)
-        uses: CycloneDX/cyclonedx-github-actions@v2
+        uses: CycloneDX/gh-node-action@v2
         with:
           path: frontend
           output: sbom-frontend.xml
