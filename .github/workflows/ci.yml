@@ -18,6 +18,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      security-events: write  # Required for uploading SARIF results
 
     steps:
       - name: Checkout code
@@ -122,7 +123,7 @@ jobs:
           output: 'trivy-backend-results.sarif'
 
       - name: Upload Trivy results to GitHub Security - Backend
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-backend-results.sarif'
           category: 'trivy-backend'
@@ -138,7 +139,7 @@ jobs:
           output: 'trivy-frontend-results.sarif'
 
       - name: Upload Trivy results to GitHub Security - Frontend
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-frontend-results.sarif'
           category: 'trivy-frontend'
