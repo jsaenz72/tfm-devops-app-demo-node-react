@@ -40,7 +40,13 @@ jobs:
 
       - name: Run backend tests
         working-directory: app-demo-node-react/backend
-        run: npm test -- --passWithNoTests
+        run: npm test -- --passWithNoTests --coverage --coverageReporters=json-summary --coverageReporters=text --coverageReporters=lcov
+
+      - name: Upload backend coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: app-demo-node-react/backend/coverage/
 
       # ============================
       # FRONTEND BUILD
@@ -52,6 +58,18 @@ jobs:
       - name: Build frontend
         working-directory: app-demo-node-react/frontend
         run: npm run build
+
+      - name: Run frontend tests
+        working-directory: app-demo-node-react/frontend
+        run: npm test -- --passWithNoTests --coverage --coverageReporters=json-summary --coverageReporters=text --coverageReporters=lcov
+        continue-on-error: true
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: app-demo-node-react/frontend/coverage/
 
       # ============================
       # DOCKER - BACKEND
@@ -81,10 +99,16 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: app-demo-node-react/backend
-          file: app-demo-node-react/backend/Dockerfile.dev
+          file: app-demo-node-react/backend/Dockerfile.prod
           push: true
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.ref_name }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:buildcache,mode=max
 
       # ============================
       # DOCKER - FRONTEND
@@ -107,10 +131,16 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: app-demo-node-react/frontend
-          file: app-demo-node-react/frontend/Dockerfile.dev
+          file: app-demo-node-react/frontend/Dockerfile.prod
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ github.ref_name }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:buildcache,mode=max
 
       # ============================
       # SECURITY SCAN - BACKEND
