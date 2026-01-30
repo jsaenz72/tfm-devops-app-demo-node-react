@@ -39,7 +39,7 @@ ARG VERSION
 
 # Metadata siguiendo OCI Image Spec
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.authors="Jose Saenz <your-email@example.com>" \
+      org.opencontainers.image.authors="Jaime Sáenz <jsaenz72@hotmail.com>" \
       org.opencontainers.image.url="https://github.com/jsaenz72/tfm-devops-app-demo-node-react" \
       org.opencontainers.image.source="https://github.com/jsaenz72/tfm-devops-app-demo-node-react" \
       org.opencontainers.image.version="${VERSION}" \

@@ -9,6 +9,7 @@ import productosRouter from './routes/productos.js';
 import empresaRouter from './routes/empresa.js';
 import facturasRouter from './routes/facturas.js';
 import mockRouter from './routes/autorizacion.mock.js';
+import healthcheckRouter from './routes/healthcheck.js';
 
 // Swagger
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -61,6 +62,7 @@ app.use('/api/productos', productosRouter);
 app.use('/api/empresa', empresaRouter);
 app.use('/api/facturas', facturasRouter);
 app.use('/api/mocks', mockRouter);
+app.use('/api/healthcheck', healthcheckRouter);
 
 /* =====================================
    FRONTEND (React build)
