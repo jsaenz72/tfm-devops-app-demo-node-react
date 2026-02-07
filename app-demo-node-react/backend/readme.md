@@ -80,3 +80,10 @@ Para utilizar el token de acceso desde su cliente Docker CLI:
 docker login -u jsaenz72
 2. En la solicitud de contraseña, ingrese el token de acceso personal.
 <DOCKER_PERSONAL_ACCESS_TOKEN>
+
+## ArgoCD
+# Forzar que ArgoCD vuelva a crear los pods
+kubectl annotate application demo-app -n argocd \
+  argocd.argoproj.io/refresh=hard --overwrite
+
+kubectl get pods -n demo-app
