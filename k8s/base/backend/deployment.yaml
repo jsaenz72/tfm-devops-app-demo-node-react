@@ -4,15 +4,8 @@ metadata:
   name: backend
   labels:
     app: backend
-    component: api
-    version: v1
 spec:
   replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   selector:
     matchLabels:
       app: backend
@@ -20,76 +13,27 @@ spec:
     metadata:
       labels:
         app: backend
-        component: api
-        version: v1
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
-        prometheus.io/path: "/metrics"
     spec:
-      # Security Context
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1001
-        fsGroup: 1001
-      
       containers:
       - name: backend
         image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
         imagePullPolicy: Always
-        
-        ports:
-        - name: http
-          containerPort: 3000
-          protocol: TCP
-        
+
         env:
-        - name: NODE_ENV
-          value: "production"
-        - name: PORT
-          value: "3000"
-        - name: DB_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: backend-config
-              key: db_host
-        
-        # Health Checks
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-        
-        # Resources
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        
-        # Security
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
-          capabilities:
-            drop:
-            - ALL
-      
-      # Image Pull Secrets (si usas registry privado)
-      imagePullSecrets:
-      - name: ghcr-secret
+        - name: CONFIG_PATH
+          value: "/app/config"
+
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+
+      volumes:
+      - name: config-volume
+        configMap:
+          name: backend-json-files
+          items:
+          - key: config.json
+            path: config.json
+          - key: settings.json
+            path: settings.json

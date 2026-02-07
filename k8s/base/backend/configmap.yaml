@@ -5,54 +5,13 @@ metadata:
 data:
   config.json: |
     {
-      "database": {
-        "host": "postgres.demo-app.svc.cluster.local",
-        "port": 5432
-      }
-    }
-  settings.json: |
-    {
       "server": {
         "port": 3000
       }
     }
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: backend
-  namespace: demo-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: backend
-  template:
-    metadata:
-      labels:
-        app: backend
-    spec:
-      containers:
-      - name: backend
-        image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
-        
-        # Montar ConfigMap como archivos
-        volumeMounts:
-        - name: config-volume
-          mountPath: /app/config          # ← Tu app lee de aquí
-          readOnly: true
-        
-        env:
-        - name: CONFIG_PATH
-          value: "/app/config"             # ← Indica a tu app dónde buscar
-      
-      volumes:
-      - name: config-volume
-        configMap:
-          name: backend-json-files
-          items:
-          - key: config.json
-            path: config.json              # ← Archivo: /app/config/config.json
-          - key: settings.json
-            path: settings.json            # ← Archivo: /app/config/settings.json
+  settings.json: |
+    {
+      "featureFlags": {
+        "demoMode": true
+      }
+    }
