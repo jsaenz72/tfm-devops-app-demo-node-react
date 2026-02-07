@@ -35,6 +35,18 @@ docker compose -f docker-compose.prod.yml up
 docker build -t app-backend:1.0.0 ./backend
 docker build -t app-frontend:1.0.0 ./frontend
 
+## PROBAR LOCALMENTE
+# Backend
+cd app-demo-node-react/backend
+docker build -f Dockerfile.prod -t backend:test .
+docker run -p 3000:3000 backend:test
+
+# Frontend
+cd ../frontend
+docker build -f Dockerfile.prod -t frontend:test .
+docker run -p 80:80 frontend:test
+## FIN PROBAR LOCALMENTE 
+
 ## Trivy
 ## backend y frontend (Desarrollo)
 trivy image app-demo-node-react-backend:latest

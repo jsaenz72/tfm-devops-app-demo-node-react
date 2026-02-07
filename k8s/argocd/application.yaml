@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-app
+  namespace: argocd
+  # Finalizer para cleanup automático
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  # Proyecto de Argo CD
+  project: default
+  
+  # Source: Repositorio Git
+  source:
+    repoURL: https://github.com/jsaenz72/tfm-devops-app-demo-node-react
+    targetRevision: main
+    path: k8s/base
+  
+  # Destination: Cluster Kubernetes
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-app
+  
+  # Sync Policy
+  syncPolicy:
+    # Sincronización automática
+    automated:
+      prune: true        # Eliminar recursos huérfanos
+      selfHeal: true     # Auto-reparar drift
+      allowEmpty: false  # No permitir aplicaciones vacías
+    
+    # Opciones de sincronización
+    syncOptions:
+      - CreateNamespace=true  # Crear namespace si no existe
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    
+    # Retry strategy
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Health Assessment
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas
+  
+  # Información adicional
+  info:
+  - name: Description
+    value: "Demo App for TFM DevOps - GitOps with Argo CD"
+  - name: Repository
+    value: "https://github.com/jsaenz72/tfm-devops-app-demo-node-react"
