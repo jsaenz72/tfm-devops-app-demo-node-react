@@ -7,11 +7,9 @@ metadata:
     app: frontend
     component: ui
 spec:
-  type: ClusterIP
-  selector:
-    app: frontend
+  type: NodePort
   ports:
   - name: http
     port: 80
     targetPort: http
-    protocol: TCP
+    nodePort: 30080
