@@ -30,7 +30,7 @@ spec:
         
         ports:
         - name: http
-          containerPort: 80
+          containerPort: 8080
           protocol: TCP
         
         env:
@@ -68,7 +68,6 @@ spec:
         # Security
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
           capabilities:
             drop:
             - ALL
