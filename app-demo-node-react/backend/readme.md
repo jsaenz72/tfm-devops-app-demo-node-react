@@ -113,3 +113,6 @@ kubectl delete pod -n demo-app -l app=frontend
 
 # Recrea los pods frontend
 kubectl rollout restart deployment frontend -n demo-app
+
+# Password de ArgoCD
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d

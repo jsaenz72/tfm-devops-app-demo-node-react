@@ -32,20 +32,6 @@ spec:
         - name: backend-data
           mountPath: /app/data
 
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 5
-
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 20
-          periodSeconds: 10
-
       volumes:
       - name: backend-data
         persistentVolumeClaim:
