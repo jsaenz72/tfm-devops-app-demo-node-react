@@ -2,12 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: demo-app-ingress
-  labels:
-    app: demo-app
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+  namespace: demo-app
 spec:
   ingressClassName: traefik
   rules:
@@ -21,7 +16,8 @@ spec:
             name: frontend
             port:
               number: 80
-      - path: /api
+
+      - path: /api-docs
         pathType: Prefix
         backend:
           service:

@@ -30,6 +30,16 @@ docker compose -f docker-compose.dev.yml down -v
 docker compose -f docker-compose.dev.yml build --no-cache
 docker compose -f docker-compose.dev.yml up
 ## backend y frontend (Producción)
+# Primero creamos la imagen
+docker build -f Dockerfile.prod -t backend:test .
+# Levantamos el docker
+docker run `
+  -p 3000:3000 `
+  -e DATA_DIR=/app/data `
+  -v C:\TFM\tfm-devops-app-demo-node-react\app-demo-node-react\backend\src\data:/app/data `
+  backend:test
+
+
 docker compose -f docker-compose.prod.yml up
 ## Construcción de imágenes de producción
 docker build -t app-backend:1.0.0 ./backend
@@ -82,8 +92,24 @@ docker login -u jsaenz72
 <DOCKER_PERSONAL_ACCESS_TOKEN>
 
 ## ArgoCD
+# Borrar el cluster
+k3d cluster delete tfm-gitops
+
+# Crear el cluster 
+k3d cluster create tfm-gitops \
+  --agents 2 \
+  --servers 1 \
+  --port "80:80@loadbalancer" \
+  --port "443:443@loadbalancer"
+
 # Forzar que ArgoCD vuelva a crear los pods
 kubectl annotate application demo-app -n argocd \
   argocd.argoproj.io/refresh=hard --overwrite
 
 kubectl get pods -n demo-app
+
+# Borrar pods manualmente
+kubectl delete pod -n demo-app -l app=frontend
+
+# Recrea los pods frontend
+kubectl rollout restart deployment frontend -n demo-app

@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  labels:
-    app: backend
+  namespace: demo-app
 spec:
   replicas: 2
   selector:
@@ -22,18 +21,32 @@ spec:
         ports:
         - name: http
           containerPort: 3000
-          protocol: TCP
 
         env:
-        - name: CONFIG_PATH
-          value: "/app/config"
+        - name: DATA_DIR
+          value: /app/data
+        - name: PORT
+          value: "3000"
 
         volumeMounts:
-        - name: config-volume
-          mountPath: /app/config
-          readOnly: true
+        - name: backend-data
+          mountPath: /app/data
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
 
       volumes:
-      - name: config-volume
-        configMap:
-          name: backend-json-files
+      - name: backend-data
+        persistentVolumeClaim:
+          claimName: backend-data-pvc

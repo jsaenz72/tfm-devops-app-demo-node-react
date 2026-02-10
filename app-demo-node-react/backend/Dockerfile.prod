@@ -53,11 +53,15 @@ LABEL org.opencontainers.image.created="${BUILD_DATE}" \
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
+# Actualizar sistema base
+RUN apk update && apk upgrade --no-cache
+
 # Directorio de trabajo
 WORKDIR /app
 
-# Actualizar sistema base
-RUN apk update && apk upgrade --no-cache
+# Crear directorio para datos persistentes ANTES de cambiar a usuario nodejs
+RUN mkdir -p /app/data && \
+    chown -R nodejs:nodejs /app/data
 
 # Copiar solo los archivos necesarios desde builder
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
@@ -69,7 +73,8 @@ USER nodejs
 
 # Variables de entorno
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    DATA_DIR=/app/data
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
