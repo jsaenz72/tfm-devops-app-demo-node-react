@@ -3,13 +3,10 @@ kind: Service
 metadata:
   name: frontend
   namespace: demo-app
-  labels:
-    app: frontend
-    component: ui
 spec:
   type: ClusterIP
+  selector:
+    app: frontend
   ports:
-  - name: http
-    port: 80
-    targetPort: http
-    nodePort: 8080
+    - port: 80
+      targetPort: 8080
