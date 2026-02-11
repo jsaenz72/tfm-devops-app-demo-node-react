@@ -8,8 +8,13 @@ const options = {
       version: "1.0.0",
       description: "Documentación generada automáticamente con Swagger",
     },
+    servers: [
+      {
+        url: "/",   // 👈 IMPORTANTE
+      },
+    ],
   },
-  apis: ["./routes/*.js", "./index.js"], // ruta donde están tus endpoints
+  apis: ["./routes/*.js", "./index.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
