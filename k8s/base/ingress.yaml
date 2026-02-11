@@ -3,10 +3,8 @@ kind: Ingress
 metadata:
   name: demo-app-ingress
   namespace: demo-app
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
     - host: demo.local
       http:
