@@ -24,13 +24,16 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
           - |
-            echo "InitContainer: comprobando volumen persistente..."
-            if [ "$(ls -A /data 2>/dev/null)" ]; then
-              echo "El volumen ya contiene datos. No se copian archivos."
+              echo "InitContainer: comprobando inicialización del volumen..."
+            if [ -f /data/empresa.json ]; then
+              echo "Datos ya inicializados. No se copian archivos."
             else
-              echo "Volumen vacío. Copiando datos iniciales desde /app/src/data..."
-              cp -r /app/src/data/* /data/
-              echo "Datos copiados:"
+              echo "Copiando datos iniciales al PVC..."
+              cp /app/src/data/empresa.json /data/
+              cp /app/src/data/facturas.json /data/
+              cp /app/src/data/productos.json /data/
+              cp /app/src/data/productos.test.json /data/
+              echo "Archivos copiados:"
               ls -l /data
             fi
         volumeMounts:
