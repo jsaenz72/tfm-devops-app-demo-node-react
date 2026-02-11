@@ -18,54 +18,51 @@ spec:
       # InitContainer: inicializa el PVC
       # ==============================
       initContainers:
-      - name: init-backend-data
-        image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
-        imagePullPolicy: Always
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
+        - name: init-backend-data
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
               echo "InitContainer: comprobando inicialización del volumen..."
-            if [ -f /data/empresa.json ]; then
-              echo "Datos ya inicializados. No se copian archivos."
-            else
-              echo "Copiando datos iniciales al PVC..."
-              cp /app/src/data/empresa.json /data/
-              cp /app/src/data/facturas.json /data/
-              cp /app/src/data/productos.json /data/
-              cp /app/src/data/productos.test.json /data/
-              echo "Archivos copiados:"
-              ls -l /data
-            fi
-        volumeMounts:
-        - name: backend-data
-          mountPath: /data
+              if [ -f /data/empresa.json ]; then
+                echo "Datos ya inicializados. No se copian archivos."
+              else
+                echo "Copiando datos iniciales al PVC..."
+                cp /app/src/data/empresa.json /data/
+                cp /app/src/data/facturas.json /data/
+                cp /app/src/data/productos.json /data/
+                cp /app/src/data/productos.test.json /data/
+                echo "Archivos copiados:"
+                ls -l /data
+              fi
+          volumeMounts:
+            - name: backend-data
+              mountPath: /data
 
       # ==============================
       # Contenedor principal
       # ==============================
       containers:
-      - name: backend
-        image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
-        imagePullPolicy: Always
-
-        ports:
-        - name: http
-          containerPort: 3000
-
-        env:
-        - name: DATA_DIR
-          value: /app/data
-        - name: PORT
-          value: "3000"
-
-        volumeMounts:
-        - name: backend-data
-          mountPath: /app/data
+        - name: backend
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: DATA_DIR
+              value: /app/data
+            - name: PORT
+              value: "3000"
+          volumeMounts:
+            - name: backend-data
+              mountPath: /app/data
 
       # ==============================
       # Volúmenes
       # ==============================
       volumes:
-      - name: backend-data
-        persistentVolumeClaim:
-          claimName: backend-data-pvc
+        - name: backend-data
+          persistentVolumeClaim:
+            claimName: backend-data-pvc
