@@ -10,6 +10,7 @@ import empresaRouter from './routes/empresa.js';
 import facturasRouter from './routes/facturas.js';
 import mockRouter from './routes/autorizacion.mock.js';
 import healthcheckRouter from './routes/healthcheck.js';
+import storageRoutes from './routes/storage.routes.js';
 
 // Swagger
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -21,7 +22,6 @@ const app = express();
    MIDDLEWARES
 ===================================== */
 app.use(cors());
-// app.use(bodyParser.json());
 app.use(express.json());
 
 
@@ -63,6 +63,7 @@ app.use('/api/empresa', empresaRouter);
 app.use('/api/facturas', facturasRouter);
 app.use('/api/mocks', mockRouter);
 app.use('/api/healthcheck', healthcheckRouter);
+app.use(storageRoutes);
 
 /* =====================================
    FRONTEND (React build)
