@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-seed-data
+  namespace: demo-app
+data:
+  empresa.json: |
+    {
+      "id": 1,
+      "nombre": "Empresa Demo",
+      "ruc": "1712140555001"
+    }
+
+  facturas.json: |
+    [
+      {
+        "id": 1,
+        "total": 100
+      }
+    ]
+
+  productos.json: |
+    [
+      {
+        "id": 1,
+        "nombre": "Producto A",
+        "precio": 10
+      }
+    ]

@@ -13,6 +13,33 @@ spec:
       labels:
         app: backend
     spec:
+
+      # ==============================
+      # InitContainer: inicializa el PVC
+      # ==============================
+      initContainers:
+      - name: init-backend-data
+        image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "InitContainer: comprobando volumen persistente..."
+            if [ "$(ls -A /data 2>/dev/null)" ]; then
+              echo "El volumen ya contiene datos. No se copian archivos."
+            else
+              echo "Volumen vacío. Copiando datos iniciales desde /app/src/data..."
+              cp -r /app/src/data/* /data/
+              echo "Datos copiados:"
+              ls -l /data
+            fi
+        volumeMounts:
+        - name: backend-data
+          mountPath: /data
+
+      # ==============================
+      # Contenedor principal
+      # ==============================
       containers:
       - name: backend
         image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
@@ -32,6 +59,9 @@ spec:
         - name: backend-data
           mountPath: /app/data
 
+      # ==============================
+      # Volúmenes
+      # ==============================
       volumes:
       - name: backend-data
         persistentVolumeClaim:
