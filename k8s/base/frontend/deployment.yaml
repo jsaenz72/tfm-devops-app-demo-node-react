@@ -34,7 +34,7 @@ spec:
           protocol: TCP
         
         env:
-        - name: BACKEND_URL
+        - name: API_URL
           value: "http://backend:3000"
         
         # Health Checks

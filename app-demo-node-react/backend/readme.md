@@ -102,6 +102,8 @@ k3d cluster create tfm-gitops \
   --port "80:80@loadbalancer" \
   --port "443:443@loadbalancer"
 
+kubectl apply -k k8s/base
+
 # Forzar que ArgoCD vuelva a crear los pods
 kubectl annotate application demo-app -n argocd \
   argocd.argoproj.io/refresh=hard --overwrite
@@ -113,6 +115,8 @@ kubectl delete pod -n demo-app -l app=frontend
 
 # Recrea los pods frontend
 kubectl rollout restart deployment frontend -n demo-app
+# Ingresar al POD 
+kubectl exec -it -n demo-app deploy/backend -- sh
 
 # Password de ArgoCD
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d

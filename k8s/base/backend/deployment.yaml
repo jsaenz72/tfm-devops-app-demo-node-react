@@ -55,6 +55,8 @@ spec:
               value: /app/data
             - name: PORT
               value: "3000"
+            - name: API_BASE_URL
+              value: "http://demo.local"
           volumeMounts:
             - name: backend-data
               mountPath: /app/data
