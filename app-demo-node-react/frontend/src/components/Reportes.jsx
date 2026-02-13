@@ -13,7 +13,7 @@ import {
   Grid
 } from '@mui/material';
 
-const API_URL = process.env.API_URL;
+const API_URL = __API_URL__;
 
 export default function Reportes() {
   const [facturas, setFacturas] = useState([]);

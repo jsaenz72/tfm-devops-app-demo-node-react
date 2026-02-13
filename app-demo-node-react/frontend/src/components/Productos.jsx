@@ -22,6 +22,8 @@ import {
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 
+const API_URL = __API_URL__;
+
 export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [form, setForm] = useState({ codigo: '', nombre: '', precioUnitario: '', pagaIVA: false });

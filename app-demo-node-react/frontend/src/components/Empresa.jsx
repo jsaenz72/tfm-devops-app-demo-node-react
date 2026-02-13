@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, Button, Paper, Typography, Grid } from '@mui/material';
 
+const API_URL = __API_URL__;
+
 export default function Empresa() {
   const [form, setForm] = useState({
     nombreEmpresa: '',
@@ -13,7 +15,8 @@ export default function Empresa() {
   });
 
   useEffect(() => {
-    fetch(`/api/empresa`)
+    console.log("API_URL desde frontend:", API_URL);
+    fetch(`${API_URL}/api/empresa`)
       .then(r => r.json())
       .then(j => setForm(j))
       .catch(err => console.error('Error en fetch:', err));
@@ -26,7 +29,7 @@ export default function Empresa() {
       porcentajeIVA: Number(form.porcentajeIVA)
     };
 
-    const res = await fetch(`/api/empresa`, {
+    const res = await fetch(`${API_URL}/api/empresa`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formToSave)

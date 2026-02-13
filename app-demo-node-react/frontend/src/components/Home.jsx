@@ -3,6 +3,8 @@ import { Grid, Card, CardContent, Typography, Button } from '@mui/material';
 import { Receipt, Store, Business, TrendingUp } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
+const API_URL = __API_URL__;
+
 export default function Home() {
   return (
     <Grid container spacing={3}>

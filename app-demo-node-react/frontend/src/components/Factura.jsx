@@ -41,7 +41,7 @@ export default function Factura() {
     severity: 'success'
   });
 
-  const API_URL = process.env.API_URL;
+  const API_URL = __API_URL__;
 
   /* ===============================
      CARGA INICIAL

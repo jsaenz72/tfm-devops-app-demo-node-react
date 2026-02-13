@@ -2,6 +2,12 @@ const path = require('node:path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const Dotenv = require('dotenv-webpack');
+require('dotenv').config(); // 👈 Permite que webpack lea el .env en Node
+
+// 👇 Mostrar variable al iniciar la configuración
+console.log("=================================");
+console.log("🚀 API_URL cargada:", process.env.API_URL);
+console.log("=================================");
 
 module.exports = {
   entry: path.resolve(__dirname, 'src', 'index.jsx'),
@@ -36,7 +42,6 @@ module.exports = {
     // Inyecta una constante global para usar en el frontend
     new webpack.DefinePlugin({
       __API_URL__: JSON.stringify(process.env.API_URL || 'http://localhost:3030'),
-      __API_EXTERNA__: JSON.stringify(process.env.API_EXTERNA || 'http://localhost:3030'),
     }),
   ],
   devServer: {

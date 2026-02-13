@@ -15,6 +15,7 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
+const API_URL = __API_URL__;
 
 export default function Factura() {
   const [empresa, setEmpresa] = useState([]);

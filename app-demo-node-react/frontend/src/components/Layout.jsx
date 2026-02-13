@@ -3,6 +3,8 @@ import { AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, List
 import { Receipt, Store, Business, Home } from '@mui/icons-material';
 import { Link, Outlet } from 'react-router-dom';
 
+const API_URL = __API_URL__;
+
 export default function Layout() {
   return (
     <Box sx={{ display: 'flex' }}>
