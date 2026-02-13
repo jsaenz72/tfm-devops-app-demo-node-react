@@ -12,32 +12,29 @@ export default function Empresa() {
     numeroFactura: ''
   });
 
-const API_URL = process.env.API_URL;
+  useEffect(() => {
+    fetch(`/api/empresa`)
+      .then(r => r.json())
+      .then(j => setForm(j))
+      .catch(err => console.error('Error en fetch:', err));
+  }, []);
 
-useEffect(() => {
-  fetch(`${API_URL}/api/empresa`)
-    .then(r => r.json())
-    .then(j => setForm(j))
-    .catch(err => console.error('Error en fetch:', err));
-}, []);
+  async function save() {
+    const formToSave = {
+      ...form,
+      numeroFactura: Number(form.numeroFactura),
+      porcentajeIVA: Number(form.porcentajeIVA)
+    };
 
-async function save() {
-  const formToSave = {
-    ...form,
-    numeroFactura: Number(form.numeroFactura),
-    porcentajeIVA: Number(form.porcentajeIVA)
-  };
+    const res = await fetch(`/api/empresa`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formToSave)
+    });
 
-  const res = await fetch(`${__API_URL__}/api/empresa`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(formToSave)
-  });
-
-  if (res.ok) alert('Empresa guardada');
-  else alert('Error');
-}
-
+    if (res.ok) alert('Empresa guardada');
+    else alert('Error');
+  }
 
   return (
     <Paper sx={{ p: 4 }}>
@@ -54,7 +51,9 @@ async function save() {
           </Grid>
         ))}
       </Grid>
-      <Button variant="contained" sx={{ mt: 3 }} onClick={save}>Guardar Cambios</Button>
+      <Button variant="contained" sx={{ mt: 3 }} onClick={save}>
+        Guardar Cambios
+      </Button>
     </Paper>
   );
 }
