@@ -51,8 +51,8 @@ export default function Home() {
         <Card>
           <CardContent>
             <Business color="secondary" />
-            <Typography variant="h6">Ambiente</Typography>
-            <Typography variant="h4">Pruebas</Typography>
+            <Typography variant="h6">- Ambiente - </Typography>
+            <Typography variant="h4"> - Pruebas - </Typography>
             <Typography color="text.secondary">{API_URL}</Typography>
           </CardContent>
         </Card>
