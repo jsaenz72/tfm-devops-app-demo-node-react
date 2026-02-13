@@ -53,7 +53,7 @@ export default function Home() {
             <Business color="secondary" />
             <Typography variant="h6">Ambiente</Typography>
             <Typography variant="h4">Pruebas</Typography>
-            <Typography color="text.secondary">API - Servicio de Rentas Internas</Typography>
+            <Typography color="text.secondary">{API_URL}</Typography>
           </CardContent>
         </Card>
       </Grid>
