@@ -148,7 +148,7 @@ jobs:
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
             VERSION=${{ github.ref_name }}
-            API_URL=${{ secrets.API_URL }}
+            API_URL=http://demo.local/api
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
