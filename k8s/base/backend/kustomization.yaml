@@ -1,12 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: demo-app
+
 resources:
   - deployment.yaml
   - service.yaml
   - configmap.yaml
   - pvc-backend-data.yaml
 
+images:
   - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
     newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-    newTag: dev   # ← este valor será reemplazado por CI
+    newTag: dev
