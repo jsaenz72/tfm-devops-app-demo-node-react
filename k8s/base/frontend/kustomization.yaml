@@ -4,14 +4,14 @@ kind: Kustomization
 namespace: demo-app
 
 resources:
-  - deployment.yaml
-  - service.yaml
+- deployment.yaml
+- service.yaml
+
 
 images:
-  - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
-    newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
-    newTag: dev   # ← este valor será reemplazado por CI
-
-  - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-    newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-    newTag: dev   # ← este valor será reemplazado por CI
+- name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+  newTag: dev
+- digest: sha256:09b7ace6a99ca4b7139d213d61618dbbde34a5cd67f0eca7a0ec781e13d476df
+  name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
+  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend

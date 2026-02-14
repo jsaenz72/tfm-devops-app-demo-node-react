@@ -4,12 +4,12 @@ kind: Kustomization
 namespace: demo-app
 
 resources:
-  - deployment.yaml
-  - service.yaml
-  - configmap.yaml
-  - pvc-backend-data.yaml
+- deployment.yaml
+- service.yaml
+- configmap.yaml
+- pvc-backend-data.yaml
 
 images:
-  - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-    newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-    newTag: dev
+- digest: sha256:ea9b2fafab6819a08dbb5864ca09b9b6ba31f4d36543b9402d3e34927849390a
+  name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
