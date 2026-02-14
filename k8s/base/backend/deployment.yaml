@@ -13,13 +13,11 @@ spec:
       labels:
         app: backend
     spec:
+      automountServiceAccountToken: false
 
-      # ==============================
-      # InitContainer: inicializa el PVC
-      # ==============================
       initContainers:
         - name: init-backend-data
-          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
           imagePullPolicy: Always
           command: ["/bin/sh", "-c"]
           args:
@@ -40,9 +38,6 @@ spec:
             - name: backend-data
               mountPath: /data
 
-      # ==============================
-      # Contenedor principal
-      # ==============================
       containers:
         - name: backend
           image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
@@ -60,10 +55,14 @@ spec:
           volumeMounts:
             - name: backend-data
               mountPath: /app/data
+          resources:
+            requests:
+              cpu: "250m"       # Solicita 0.25 CPU
+              memory: "256Mi"   # Solicita 256 MiB de memoria
+            limits:
+              cpu: "500m"       # Límite de 0.5 CPU
+              memory: "512Mi"   # Límite de 512 MiB de memoria
 
-      # ==============================
-      # Volúmenes
-      # ==============================
       volumes:
         - name: backend-data
           persistentVolumeClaim:
