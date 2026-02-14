@@ -16,7 +16,7 @@ export default function Empresa() {
 
   useEffect(() => {
     console.log("API_URL desde frontend:", API_URL);
-    fetch(`${API_URL}/api/empresa`)
+    fetch(`/api/empresa`)
       .then(r => r.json())
       .then(j => setForm(j))
       .catch(err => console.error('Error en fetch:', err));
@@ -29,7 +29,7 @@ export default function Empresa() {
       porcentajeIVA: Number(form.porcentajeIVA)
     };
 
-    const res = await fetch(`${API_URL}/api/empresa`, {
+    const res = await fetch(`/api/empresa`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formToSave)

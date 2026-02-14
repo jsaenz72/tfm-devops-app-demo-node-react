@@ -35,7 +35,7 @@ export default function Productos() {
   const API_URL = process.env.API_URL;
 
   useEffect(() => {
-    fetch(`${API_URL}/api/productos`)
+    fetch(`/api/productos`)
       .then(r => r.json())
       .then(setProductos)
       .catch(err => console.error('Error en fetch:', err));
