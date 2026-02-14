@@ -41,7 +41,7 @@ module.exports = {
     new Dotenv({ systemvars: true }),
     // Inyecta una constante global para usar en el frontend
     new webpack.DefinePlugin({
-      __API_URL__: JSON.stringify(process.env.API_URL || 'http://localhost:3030'),
+      __API_URL__: JSON.stringify(process.env.API_URL || 'http://backend:3000'),
     }),
   ],
   devServer: {
