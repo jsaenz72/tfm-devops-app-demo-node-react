@@ -12,6 +12,6 @@ images:
 - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newTag: dev
-- digest: sha256:e69a8ad5aab0ce6a238776fdea4e54124263b23898ddc9e37daab1e4c508dab4
+- digest: sha256:a39dafc7f84ed89cb5bdc48531622a895bef92117259b10d43ce0e457bf77fdb
   name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
