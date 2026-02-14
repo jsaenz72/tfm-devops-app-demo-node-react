@@ -13,7 +13,7 @@ spec:
   # Source: Repositorio Git
   source:
     repoURL: https://github.com/jsaenz72/tfm-devops-app-demo-node-react
-    targetRevision: main
+    targetRevision: develop
     path: k8s/base
   
   # Destination: Cluster Kubernetes
