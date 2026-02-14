@@ -23,7 +23,7 @@ export default function Reportes() {
   // Cargar todas las facturas
   const cargarTodas = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/facturas`);
+      const res = await fetch(`/api/facturas`);
       const data = await res.json();
       setFacturas(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -35,7 +35,7 @@ export default function Reportes() {
   // Buscar facturas por rango de fechas
   const buscarFacturas = async () => {
     try {
-      const url = `${API_URL}/api/facturas/rango?inicio=${fechaInicio}&fin=${fechaFin}`;
+      const url = `/api/facturas/rango?inicio=${fechaInicio}&fin=${fechaFin}`;
       console.log("Consultando:", url);
 
       const res = await fetch(url);

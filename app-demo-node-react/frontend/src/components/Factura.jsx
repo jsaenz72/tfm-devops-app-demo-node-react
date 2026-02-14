@@ -48,14 +48,14 @@ export default function Factura() {
      =============================== */
 
   useEffect(() => {
-    fetch(`${API_URL}/api/productos`)
+    fetch(`/api/productos`)
       .then(r => r.json())
       .then(setProductos)
       .catch(err => console.error('Error cargando productos:', err));
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/empresa`)
+    fetch(`/api/empresa`)
       .then(r => r.json())
       .then(data => {
         setEmpresa(data);
@@ -165,7 +165,7 @@ export default function Factura() {
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/facturas`, {
+      const res = await fetch(`/api/facturas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(factura)

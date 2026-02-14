@@ -42,7 +42,7 @@ export default function Productos() {
   }, []);
 
   async function save() {
-    const res = await fetch(`${API_URL}/api/productos`, {
+    const res = await fetch(`/api/productos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
@@ -58,7 +58,7 @@ export default function Productos() {
   }
 
   async function update(id) {
-    const res = await fetch(`${API_URL}/api/productos/${id}`, {
+    const res = await fetch(`/api/productos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
@@ -93,7 +93,7 @@ export default function Productos() {
   }
 
   async function remove(producto) {
-    const res = await fetch(`${API_URL}/api/productos/${producto.id}`, {
+    const res = await fetch(`/api/productos/${producto.id}`, {
       method: 'DELETE'
     });
 

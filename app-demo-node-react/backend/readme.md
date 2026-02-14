@@ -111,7 +111,7 @@ kubectl annotate application demo-app -n argocd \
 kubectl get pods -n demo-app
 
 # Borrar pods manualmente
-kubectl delete pod -n demo-app -l app=frontend
+  kubectl delete pod -n demo-app -l app=frontend
 
 # Recrea los pods frontend
 kubectl rollout restart deployment frontend -n demo-app
