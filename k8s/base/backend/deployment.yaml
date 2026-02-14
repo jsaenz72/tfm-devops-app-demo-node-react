@@ -45,7 +45,7 @@ spec:
       # ==============================
       containers:
         - name: backend
-          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend:latest
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
           imagePullPolicy: Always
           ports:
             - name: http

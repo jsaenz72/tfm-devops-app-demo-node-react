@@ -120,3 +120,5 @@ kubectl exec -it -n demo-app deploy/backend -- sh
 
 # Password de ArgoCD
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+
+oi9TarTKB9Cla7-u

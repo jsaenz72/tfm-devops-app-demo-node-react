@@ -5,6 +5,6 @@ namespace: demo-app
 
 resources:
   - namespace.yaml
+  - ingress.yaml
   - backend
   - frontend
-  - ingress.yaml
