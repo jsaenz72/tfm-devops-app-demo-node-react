@@ -350,7 +350,7 @@ export default function Factura() {
         <MenuItem value="Tarjeta de Débito">Tarjeta de Débito</MenuItem>
         <MenuItem value="Transferencia">Transferencia</MenuItem>
       </Select>
-
+      <Typography variant="h6">Pago</Typography>
       <Button variant="contained" sx={{ mt: 3 }} onClick={guardarFactura}>
         Guardar Factura
       </Button>
