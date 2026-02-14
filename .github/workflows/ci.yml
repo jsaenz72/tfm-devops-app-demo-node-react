@@ -101,7 +101,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
           build-args: |
-            API_URL=http://backend:3000/api
+            API_URL=http://backend:3000
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
