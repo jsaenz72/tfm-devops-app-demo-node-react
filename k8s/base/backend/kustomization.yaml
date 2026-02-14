@@ -10,6 +10,6 @@ resources:
 - pvc-backend-data.yaml
 
 images:
-- digest: sha256:622505f9057091a1f46b1190f518645c20ea8b5b4ce78364e753dd16ed92fe61
+- digest: sha256:3ffbea39cb8e2542e9a3eb9c455c82b4f5d28ef94322da911d8dafa459c847a1
   name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
