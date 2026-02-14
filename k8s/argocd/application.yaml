@@ -12,7 +12,7 @@ spec:
   
   # Source: Repositorio Git
   source:
-    repoURL: https://github.com/jsaenz72/tfm-devops-app-demo-node-react
+    repoURL: https://github.com/jsaenz72/tfm-devops-app-demo-node-react.git
     targetRevision: develop
     path: k8s/base
   
