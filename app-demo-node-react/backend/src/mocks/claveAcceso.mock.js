@@ -31,7 +31,6 @@ function calcularModulo11(cadena) {
     return resultado;
 }
 
-
 export function generarClaveAccesoMock( ) {
   const fecha = process.env.SRI_FECHA_COMPROBANTE ?? '09122025';
   const tipoComprobante = process.env.SRI_TIPO_COMPROBANTE ?? '01';
