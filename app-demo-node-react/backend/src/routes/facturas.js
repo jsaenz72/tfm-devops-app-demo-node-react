@@ -60,6 +60,30 @@ router.get('/', async (req, res) => {
  *   get:
  *     summary: Listado de facturas en un rango de fechas
  *     tags: [Facturas]
+ *     parameters:
+ *       - in: query
+ *         name: inicio
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de inicio del rango
+ *       - in: query
+ *         name: fin
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de fin del rango
+ *     responses:
+ *       200:
+ *         description: Lista de facturas filtradas por rango de fechas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       500:
+ *         description: Error al cargar facturas
  */
 router.get('/rango', async (req, res) => {
   try {
@@ -89,13 +113,36 @@ router.get('/rango', async (req, res) => {
   }
 });
 
+// POST: crear nueva factura
 /**
  * @swagger
  * /api/facturas:
  *   post:
  *     summary: Crear una nueva factura
  *     tags: [Facturas]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cabecera
+ *               - detalle
+ *             properties:
+ *               cabecera:
+ *                 type: object
+ *               detalle:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *     responses:
+ *       201:
+ *         description: Factura creada exitosamente
+ *       400:
+ *         description: Datos inválidos (cabecera y detalle requeridos)
  */
+
 router.post('/', async (req, res) => {
   let mensaje = 'Inicio';
 
