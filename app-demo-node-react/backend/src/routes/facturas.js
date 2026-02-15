@@ -130,16 +130,19 @@ router.get('/rango', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
+    let mensaje = "Paso Inicial";
     const factura = req.body;
     if (!factura?.cabecera || !factura?.detalle) {
       return res.status(400).json({ error: 'cabecera y detalle son requeridos' });
     }
 
+    mensaje = "req.body";
     const empresa = await readList('empresa');
     if (!empresa.length) {
       return res.status(400).json({ error: 'No existe información de empresa' });
     }
 
+    mensaje = "empresa";    
     const empresaActual = empresa[0];
     if (typeof empresaActual.porcentajeIVA !== 'number') {
       return res.status(400).json({ error: 'El campo porcentajeIVA es inválido o no existe' });
@@ -156,6 +159,7 @@ router.post('/', async (req, res) => {
       direccion: empresaActual.direccion,
       puntoEmision: empresaActual.puntoEmision
     };
+    mensaje = "empresaInfo";    
 
     const porcentajeIVA = validarPorcentajeIVA(empresaActual.porcentajeIVA) / 100;
     const { fecha, formaPago, cliente } = factura.cabecera;
@@ -178,9 +182,9 @@ router.post('/', async (req, res) => {
 
     const ivaTotal = subtotalConIVA * porcentajeIVA;
     const valorTotal = subtotalConIVA + subtotalSinIVA + ivaTotal;
-
+    mensaje = "valoresCalculados";    
     const { claveAcceso, estado, numeroAutorizacion, fechaAutorizacion, ambiente } = generarAutorizacionMock();
-
+    mensaje = "generarAutorizacionMock";    
     const newFactura = {
       id,
       empresa: empresaInfo,
@@ -209,13 +213,14 @@ router.post('/', async (req, res) => {
         usuarioActualizacion: null
       }
     };
-
+    mensaje = "newFactura";    
     list.push(newFactura);
     await writeList('facturas', list);
     res.status(201).json(newFactura);
   } catch (error) {
     console.error('Error al crear factura:', error);
-    res.status(500).json({ error: 'Error interno al crear factura' });
+    mensaje = mensaje || error;
+    res.status(500).json({ error: 'Error interno al crear factura' || mensaje });
   }
 });
 
