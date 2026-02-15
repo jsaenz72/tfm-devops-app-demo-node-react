@@ -4,17 +4,24 @@ import { generarAutorizacionMock } from '../mocks/claveAcceso.mock.js';
 
 const router = express.Router();
 
+/**
+ * Valida que el porcentaje de IVA sea numérico y esté entre 0 y 100
+ */
 function validarPorcentajeIVA(valor) {
   if (valor === undefined || valor === null || valor === '') {
     throw new Error('El porcentaje de IVA es obligatorio');
   }
+
   const numero = Number(valor);
+
   if (Number.isNaN(numero)) {
     throw new TypeError('El porcentaje de IVA debe ser numérico');
   }
+
   if (numero < 0 || numero > 100) {
     throw new Error('El porcentaje de IVA debe estar entre 0 y 100');
   }
+
   return numero;
 }
 
@@ -34,70 +41,9 @@ function validarPorcentajeIVA(valor) {
  *     responses:
  *       200:
  *         description: Lista completa de facturas
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Factura'
- *       500:
- *         description: Error al cargar facturas
- *   post:
- *     summary: Crear una nueva factura
- *     tags: [Facturas]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/FacturaInput'
- *     responses:
- *       201:
- *         description: Factura creada exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Factura'
- *       400:
- *         description: Datos inválidos (cabecera y detalle requeridos)
- *       500:
- *         description: Error interno al crear factura
- */
-
-/**
- * @swagger
- * /api/facturas/rango:
- *   get:
- *     summary: Listado de facturas en un rango de fechas
- *     tags: [Facturas]
- *     parameters:
- *       - in: query
- *         name: inicio
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *         description: Fecha de inicio del rango
- *       - in: query
- *         name: fin
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *         description: Fecha de fin del rango
- *     responses:
- *       200:
- *         description: Lista de facturas filtradas por rango de fechas
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Factura'
  *       500:
  *         description: Error al cargar facturas
  */
-
 router.get('/', async (req, res) => {
   try {
     const facturas = await readList('facturas');
@@ -108,48 +54,91 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/facturas/rango:
+ *   get:
+ *     summary: Listado de facturas en un rango de fechas
+ *     tags: [Facturas]
+ */
 router.get('/rango', async (req, res) => {
   try {
     const facturas = await readList('facturas');
     const { inicio, fin } = req.query;
+
     if (!inicio || !fin) {
       return res.json(facturas);
     }
+
     const fechaInicio = new Date(inicio);
     const fechaFin = new Date(fin);
+
     const resultado = facturas.filter(f => {
-      const fechaFactura = new Date(f.audit?.fechaCreacion);
+      if (!f.audit?.fechaCreacion) return false;
+
+      const fechaFactura = new Date(f.audit.fechaCreacion);
+      if (Number.isNaN(fechaFactura.getTime())) return false;
+
       return fechaFactura >= fechaInicio && fechaFactura <= fechaFin;
     });
+
     res.json(resultado);
   } catch (error) {
-    console.error('Error al leer facturas:', error);
+    console.error('Error al leer facturas por rango:', error);
     res.status(500).json([]);
   }
 });
 
+/**
+ * @swagger
+ * /api/facturas:
+ *   post:
+ *     summary: Crear una nueva factura
+ *     tags: [Facturas]
+ */
 router.post('/', async (req, res) => {
+  let mensaje = 'Inicio';
+
   try {
-    let mensaje = "Paso Inicial";
+    mensaje = 'Validando body';
+
     const factura = req.body;
-    if (!factura?.cabecera || !factura?.detalle) {
-      return res.status(400).json({ error: 'cabecera y detalle son requeridos' });
+
+    if (
+      !factura?.cabecera ||
+      !Array.isArray(factura?.detalle) ||
+      factura.detalle.length === 0
+    ) {
+      return res.status(400).json({
+        error: 'cabecera y detalle (array no vacío) son requeridos'
+      });
     }
 
-    mensaje = "req.body";
+    mensaje = 'Leyendo empresa';
+
     const empresa = await readList('empresa');
+
     if (!empresa.length) {
-      return res.status(400).json({ error: 'No existe información de empresa' });
+      return res.status(400).json({
+        error: 'No existe información de empresa'
+      });
     }
 
-    mensaje = "empresa";    
     const empresaActual = empresa[0];
+
     if (typeof empresaActual.porcentajeIVA !== 'number') {
-      return res.status(400).json({ error: 'El campo porcentajeIVA es inválido o no existe' });
+      return res.status(400).json({
+        error: 'El campo porcentajeIVA es inválido o no existe'
+      });
     }
+
     if (typeof empresaActual.numeroFactura !== 'number') {
-      return res.status(400).json({ error: 'El campo numeroFactura es inválido o no existe' });
+      return res.status(400).json({
+        error: 'El campo numeroFactura es inválido o no existe'
+      });
     }
+
+    mensaje = 'Construyendo empresaInfo';
 
     const empresaInfo = {
       nombreEmpresa: empresaActual.nombreEmpresa,
@@ -159,32 +148,60 @@ router.post('/', async (req, res) => {
       direccion: empresaActual.direccion,
       puntoEmision: empresaActual.puntoEmision
     };
-    mensaje = "empresaInfo";    
 
-    const porcentajeIVA = validarPorcentajeIVA(empresaActual.porcentajeIVA) / 100;
+    const porcentajeIVA = validarPorcentajeIVA(
+      empresaActual.porcentajeIVA
+    ) / 100;
+
     const { fecha, formaPago, cliente } = factura.cabecera;
 
-    const nuevoNumeroFactura = empresaActual.numeroFactura + 1;
-    empresaActual.numeroFactura = nuevoNumeroFactura;
-    await writeList('empresa', empresa);
-
-    const list = await readList('facturas');
-    const id = list.length ? Math.max(...list.map(f => f.id)) + 1 : 1;
-    const now = new Date().toISOString();
+    mensaje = 'Calculando totales';
 
     const subtotalConIVA = factura.detalle
       .filter(d => d.pagaIVA)
-      .reduce((acc, d) => acc + (d.precioTotal || d.cantidad * d.precioUnitario), 0);
+      .reduce(
+        (acc, d) =>
+          acc +
+          (d.precioTotal ??
+            (Number(d.cantidad) * Number(d.precioUnitario))),
+        0
+      );
 
     const subtotalSinIVA = factura.detalle
       .filter(d => !d.pagaIVA)
-      .reduce((acc, d) => acc + (d.precioTotal || d.cantidad * d.precioUnitario), 0);
+      .reduce(
+        (acc, d) =>
+          acc +
+          (d.precioTotal ??
+            (Number(d.cantidad) * Number(d.precioUnitario))),
+        0
+      );
 
     const ivaTotal = subtotalConIVA * porcentajeIVA;
     const valorTotal = subtotalConIVA + subtotalSinIVA + ivaTotal;
-    mensaje = "valoresCalculados";    
-    const { claveAcceso, estado, numeroAutorizacion, fechaAutorizacion, ambiente } = generarAutorizacionMock();
-    mensaje = "generarAutorizacionMock";    
+
+    mensaje = 'Generando autorización';
+
+    const {
+      claveAcceso,
+      estado,
+      numeroAutorizacion,
+      fechaAutorizacion,
+      ambiente
+    } = generarAutorizacionMock();
+
+    mensaje = 'Generando ID y número factura';
+
+    const list = await readList('facturas');
+
+    const id = list.length
+      ? Math.max(...list.map(f => Number(f.id) || 0)) + 1
+      : 1;
+
+    const nuevoNumeroFactura = empresaActual.numeroFactura + 1;
+
+    const now = new Date().toISOString();
+
     const newFactura = {
       id,
       empresa: empresaInfo,
@@ -213,14 +230,27 @@ router.post('/', async (req, res) => {
         usuarioActualizacion: null
       }
     };
-    mensaje = "newFactura";    
+
+    mensaje = 'Guardando factura';
+
     list.push(newFactura);
     await writeList('facturas', list);
+
+    mensaje = 'Actualizando número factura empresa';
+
+    empresaActual.numeroFactura = nuevoNumeroFactura;
+    await writeList('empresa', empresa);
+
     res.status(201).json(newFactura);
+
   } catch (error) {
     console.error('Error al crear factura:', error);
-    mensaje = mensaje || error;
-    res.status(500).json({ error: 'Error interno al crear factura' || mensaje });
+
+    res.status(500).json({
+      error: 'Error interno al crear factura',
+      paso: mensaje,
+      detalle: error.message
+    });
   }
 });
 
