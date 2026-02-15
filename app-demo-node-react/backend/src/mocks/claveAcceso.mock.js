@@ -33,15 +33,14 @@ function calcularModulo11(cadena) {
 
 
 export function generarClaveAccesoMock( ) {
-  const fecha = process.env.SRI_FECHA_COMPROBANTE;
-  const tipoComprobante = process.env.SRI_TIPO_COMPROBANTE;
-  const ruc = process.env.SRI_RUC;
-  const ambiente = process.env.SRI_AMBIENTE_CODIGO;
-  const serie = process.env.SRI_SERIE;
-  const secuencial = process.env.SRI_SECUENCIAL;
-  const codigoNumerico = process.env.SRI_CODIGO_NUMERICO;
-  const tipoEmision = process.env.SRI_TIPO_EMISION;
-
+  const fecha = process.env.SRI_FECHA_COMPROBANTE ?? '09122025';
+  const tipoComprobante = process.env.SRI_TIPO_COMPROBANTE ?? '01';
+  const ruc = process.env.SRI_RUC ?? '1712140555001';
+  const ambiente = process.env.SRI_AMBIENTE_CODIGO ?? '2';
+  const serie = process.env.SRI_SERIE ?? '001';
+  const secuencial = process.env.SRI_SECUENCIAL ?? '008000677';
+  const codigoNumerico = process.env.SRI_CODIGO_NUMERICO ?? '62123456';
+  const tipoEmision = process.env.SRI_TIPO_EMISION ?? '1';
   const base =
     fecha +
     tipoComprobante +
