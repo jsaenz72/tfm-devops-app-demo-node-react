@@ -1,17 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
 namespace: demo-app
-
 resources:
 - deployment.yaml
 - service.yaml
-
-
 images:
 - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newTag: dev
-- digest: sha256:64add84a8f0a164674a2e1ddd3539c6d55effd3269f2e9564b8e60b2e2d5da99
+- digest: sha256:16e5235a9d963770573c3571c762e6cf7586996259860581f793ba9f9658a0a9
   name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
