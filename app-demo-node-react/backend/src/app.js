@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import client from 'prom-client';
 
 // Routers
 import productosRouter from './routes/productos.js';
@@ -23,6 +24,37 @@ const app = express();
 ===================================== */
 app.use(cors());
 app.use(express.json());
+
+/* =====================================
+   PROMETHEUS METRICS
+===================================== */
+// recolecta métricas por defecto (CPU, memoria, etc)
+client.collectDefaultMetrics();
+
+// contador de requests HTTP
+const httpRequestCounter = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+});
+
+// middleware para contar requests
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.inc({
+      method: req.method,
+      route: req.route?.path || req.path,
+      status: res.statusCode,
+    });
+  });
+  next();
+});
+
+// endpoint /metrics
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
 
 /* =====================================
