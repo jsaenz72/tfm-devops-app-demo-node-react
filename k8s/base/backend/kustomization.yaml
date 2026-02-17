@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: demo-app
 
 resources:
-- deployment.yaml
+- rollout.yaml
 - service.yaml
 - configmap.yaml
 - pvc-backend-data.yaml

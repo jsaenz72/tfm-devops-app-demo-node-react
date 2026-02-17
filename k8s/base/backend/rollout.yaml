@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: backend
+  namespace: demo-app
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+      automountServiceAccountToken: false
+
+      initContainers:
+        - name: init-backend-data
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "InitContainer: comprobando inicialización del volumen..."
+              if [ -f /data/empresa.json ]; then
+                echo "Datos ya inicializados."
+              else
+                echo "Copiando datos iniciales..."
+                cp /app/src/data/*.json /data/
+                ls -l /data
+              fi
+          volumeMounts:
+            - name: backend-data
+              mountPath: /data
+
+      containers:
+        - name: backend
+          image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: DATA_DIR
+              value: /app/data
+            - name: PORT
+              value: "3000"
+            - name: API_BASE_URL
+              value: "http://demo.local"
+          volumeMounts:
+            - name: backend-data
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+      volumes:
+        - name: backend-data
+          persistentVolumeClaim:
+            claimName: backend-data-pvc
+
+  strategy:
+    canary:
+      steps:
+        - setWeight: 10
+        - pause: { duration: 30s }
+
+        - setWeight: 50
+        - pause: { duration: 30s }
+
+        - setWeight: 100
