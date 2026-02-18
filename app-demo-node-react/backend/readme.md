@@ -109,6 +109,7 @@ kubectl annotate application demo-app -n argocd \
   argocd.argoproj.io/refresh=hard --overwrite
 
 kubectl get pods -n demo-app
+kubectl get svc -n demo-app --show-labels
 
 # Borrar pods manualmente
   kubectl delete pod -n demo-app -l app=frontend
@@ -121,4 +122,140 @@ kubectl exec -it -n demo-app deploy/backend -- sh
 # Password de ArgoCD
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
 
-oi9TarTKB9Cla7-u
+# 💣 PRUEBA DE DESTRUCCIÓN TOTAL
+
+## 🎯 Objetivo
+Demostrar que tu sistema es:
+- 100% declarativo  
+- 100% reproducible  
+- 0% dependiente de comandos manuales  
+- GitOps real  
+
+---
+
+## 🧨 FASE 1 — Destruir todo
+💣 PRUEBA DE DESTRUCCIÓN TOTAL
+🎯 Objetivo
+Demostrar que tu sistema es:
+
+100% declarativo
+
+100% reproducible
+
+0% dependiente de comandos manuales
+
+GitOps real
+
+🧨 FASE 1 — Destruir todo
+1️⃣ Borrar cluster completo
+
+Si usas k3d:
+
+k3d cluster delete tfm-gitops
+
+Verifica:
+
+kubectl get nodes
+
+Debe fallar.
+
+🏗 FASE 2 — Crear cluster limpio
+k3d cluster create tfm-gitops --agents 2
+
+Configura kubeconfig si hace falta.
+
+Verifica:
+
+kubectl get nodes
+
+📦 FASE 3 — Instalar monitoring stack
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  -f helm/kube-prometheus-values.yaml
+
+
+Espera a que todo esté Running:
+
+kubectl get pods -n monitoring
+
+🚀 FASE 4 — Instalar ArgoCD
+
+(Si lo gestionas externo, instálalo)
+
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+
+Espera a que esté ready:
+
+kubectl get pods -n argocd
+
+🎯 FASE 5 — Aplicar tu Application
+kubectl apply -f k8s/argocd/application.yaml
+
+
+ArgoCD debe:
+
+Clonar repo
+
+Aplicar overlay/prod
+
+Crear namespace demo-app
+
+Crear rollout
+
+Crear services
+
+Crear ingress
+
+Crear ServiceMonitor
+
+🔍 FASE 6 — Validaciones críticas
+✅ 1. Namespace existe
+kubectl get ns demo-app
+
+✅ 2. Backend está corriendo
+kubectl get pods -n demo-app
+
+✅ 3. Service tiene labels correctos
+kubectl get svc -n demo-app --show-labels
+
+
+Debe mostrar:
+
+app=backend
+
+✅ 4. ServiceMonitor existe
+kubectl get servicemonitor -n monitoring
+
+
+Debe aparecer backend.
+
+✅ 5. Prometheus Targets
+
+Port-forward:
+
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090 -n monitoring
+
+
+Ir a:
+
+http://localhost:9090/targets
+
+
+Debe mostrar:
+
+backend
+2/2 UP
+
+
+Si ves eso:
+
+🎉 STACK 100% REPRODUCIBLE.
+
+3FVvwCKHfNzHEw6B
+
