@@ -123,7 +123,6 @@ kubectl exec -it -n demo-app deploy/backend -- sh
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
 
 # 💣 PRUEBA DE DESTRUCCIÓN TOTAL
-
 ## 🎯 Objetivo
 Demostrar que tu sistema es:
 - 100% declarativo  
@@ -144,7 +143,8 @@ Demostrar que tu sistema es:
 k3d cluster delete tfm-gitops
 
 Verifica:
-kubectl get nodes (Debe fallar)
+kubectl get nodes 
+(Debe fallar)
 
 🏗 FASE 2 — Crear cluster limpio
 k3d cluster create tfm-gitops --agents 2
@@ -166,13 +166,20 @@ Espera a que todo esté Running:
 kubectl get pods -n monitoring
 
 🚀 FASE 4 — Instalar ArgoCD y Argo Rollouts 
-
 ✅ ArgoCD  (Si lo gestionas externo, instálalo)
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-✅ Argo Rollouts 
-kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+✅ Argo Rollouts
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
+✅ Argo Rollouts -- NEW VERSION
+
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+kubectl argo rollouts version
 
 
 Espera a que esté ready:
@@ -225,6 +232,7 @@ jsaenz@PCJAER:/mnt/c/TFM/tfm-devops-app-demo-node-react$ helm upgrade --install 
   --namespace monitoring \
   --create-namespace \
   -f helm/kube-prometheus-values.yaml
+
 Release "monitoring" does not exist. Installing it now.
 NAME: monitoring
 LAST DEPLOYED: Tue Feb 17 23:13:06 2026
@@ -254,3 +262,5 @@ Visit https://github.com/prometheus-operator/kube-prometheus for instructions on
 # ARGOCD
 3FVvwCKHfNzHEw6B
 
+
+kubectl describe rollout backend -n demo-app
