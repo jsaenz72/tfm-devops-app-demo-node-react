@@ -130,42 +130,27 @@ Demostrar que tu sistema es:
 - 100% reproducible  
 - 0% dependiente de comandos manuales  
 - GitOps real  
-
 ---
-
 ## 🧨 FASE 1 — Destruir todo
 💣 PRUEBA DE DESTRUCCIÓN TOTAL
 🎯 Objetivo
 Demostrar que tu sistema es:
-
-100% declarativo
-
-100% reproducible
-
-0% dependiente de comandos manuales
-
-GitOps real
+- 100% declarativo
+- 100% reproducible
+- 0% dependiente de comandos manuales
 
 🧨 FASE 1 — Destruir todo
 1️⃣ Borrar cluster completo
-
-Si usas k3d:
-
 k3d cluster delete tfm-gitops
 
 Verifica:
-
-kubectl get nodes
-
-Debe fallar.
+kubectl get nodes (Debe fallar)
 
 🏗 FASE 2 — Crear cluster limpio
 k3d cluster create tfm-gitops --agents 2
-
 Configura kubeconfig si hace falta.
 
 Verifica:
-
 kubectl get nodes
 
 📦 FASE 3 — Instalar monitoring stack
@@ -177,42 +162,33 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --create-namespace \
   -f helm/kube-prometheus-values.yaml
 
-
 Espera a que todo esté Running:
-
 kubectl get pods -n monitoring
 
-🚀 FASE 4 — Instalar ArgoCD
+🚀 FASE 4 — Instalar ArgoCD y Argo Rollouts 
 
-(Si lo gestionas externo, instálalo)
-
+✅ ArgoCD  (Si lo gestionas externo, instálalo)
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+✅ Argo Rollouts 
+kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
 
 Espera a que esté ready:
-
 kubectl get pods -n argocd
 
 🎯 FASE 5 — Aplicar tu Application
 kubectl apply -f k8s/argocd/application.yaml
 
-
-ArgoCD debe:
-
-Clonar repo
-
-Aplicar overlay/prod
-
-Crear namespace demo-app
-
-Crear rollout
-
-Crear services
-
-Crear ingress
-
-Crear ServiceMonitor
+- ArgoCD debe:
+✅ 1. Clonar repo
+✅ 2. Aplicar overlay/prod
+✅ 3. Crear namespace demo-app
+✅ 4. Crear rollout
+✅ 5. Crear services
+✅ 6. Crear ingress
+✅ 7.  Crear ServiceMonitor
 
 🔍 FASE 6 — Validaciones críticas
 ✅ 1. Namespace existe
@@ -224,38 +200,57 @@ kubectl get pods -n demo-app
 ✅ 3. Service tiene labels correctos
 kubectl get svc -n demo-app --show-labels
 
-
 Debe mostrar:
-
 app=backend
 
 ✅ 4. ServiceMonitor existe
 kubectl get servicemonitor -n monitoring
 
-
 Debe aparecer backend.
 
 ✅ 5. Prometheus Targets
-
 Port-forward:
-
 kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090 -n monitoring
 
-
 Ir a:
-
 http://localhost:9090/targets
 
-
 Debe mostrar:
-
-backend
-2/2 UP
-
+backend 2/2 UP
 
 Si ves eso:
-
 🎉 STACK 100% REPRODUCIBLE.
+## GRAFANA
+jsaenz@PCJAER:/mnt/c/TFM/tfm-devops-app-demo-node-react$ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  -f helm/kube-prometheus-values.yaml
+Release "monitoring" does not exist. Installing it now.
+NAME: monitoring
+LAST DEPLOYED: Tue Feb 17 23:13:06 2026
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace monitoring get pods -l "release=monitoring"
 
+Get Grafana 'admin' user password by running:
+
+  kubectl --namespace monitoring get secrets monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+
+Access Grafana local instance:
+
+  export POD_NAME=$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=monitoring" -oname)
+  kubectl --namespace monitoring port-forward $POD_NAME 3000
+
+Get your grafana admin user password by running:
+
+  kubectl get secret --namespace monitoring -l app.kubernetes.io/component=admin-secret -o jsonpath="{.items[0].data.admin-password}" | base64 --decode ; echo
+
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+# ARGOCD
 3FVvwCKHfNzHEw6B
 

@@ -1,0 +1,1 @@
+kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=jsaenz72 --docker-password=MAdopa10# --docker-email=jaime.ernesto.saenz@gmail.com -n demo-app
