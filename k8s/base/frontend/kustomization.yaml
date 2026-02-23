@@ -5,6 +5,6 @@ resources:
 - deployment.yaml
 - service.yaml
 images:
-- digest: sha256:8b6ed855d5c6f3d2ffdfb98d62cfc21feae90643451eca361edf2b61b0eeb093
+- digest: sha256:35c9bf1572fbb97acbf99783a10b044730f372f0039ddd63ecdfc10a1af80923
   name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
