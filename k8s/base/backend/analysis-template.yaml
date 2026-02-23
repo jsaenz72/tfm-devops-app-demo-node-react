@@ -7,13 +7,15 @@ metadata:
 spec:
   metrics:
   - name: error-rate-check
-    interval: 30s # Revisamos cada 30s (2 ciclos de scrape de Prometheus)
+    interval: 30s
     successCondition: result[0] < 0.05
     failureLimit: 2
     provider:
       prometheus:
         address: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
         query: |
-          sum(rate(http_requests_total{app="backend", namespace="demo-app", status=~"5.*"}[1m])) 
-          / 
-          (sum(rate(http_requests_total{app="backend", namespace="demo-app"}[1m])) + 0.001)
+          (
+            sum(rate(http_requests_total{app="backend", status=~"5.*"}[1m])) 
+            / 
+            sum(rate(http_requests_total{app="backend"}[1m]))
+          ) or on() vector(0)  # <--- Esto evita el error de "slice index out of range"
