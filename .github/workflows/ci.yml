@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Enterprise DevSecOps
+name: CI/CD Pipeline - DevSecOps
 
 on:
   push:
