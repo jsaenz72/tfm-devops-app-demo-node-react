@@ -71,7 +71,7 @@ const swaggerOptions = {
     openapi: '3.0.0',
     info: {
       title: 'API Demo Node.js - TFM',
-      version: '1.0.0',
+      version: '1.0.1',
       description: 'Documentación de la API del backend para tu proyecto Node/React',
     },
     servers: [
