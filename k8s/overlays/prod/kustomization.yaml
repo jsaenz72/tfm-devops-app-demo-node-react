@@ -6,9 +6,11 @@ resources:
 
 
 images:
-- name: backend
+- digest: sha256:9b722e6db958133874a8d22b78a9075a2865b0c95952a030cc83c75f3a20c3a1
+  name: backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-- name: frontend
+- digest: sha256:2a49d24705d904cd323e347627ba57cfb3d710cd1c28453364a01642239dce58
+  name: frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
 - digest: sha256:e71d5897214ca6bee9a00c12088b5b07ae1d2ba28c5999a80ed8a39e66f7c360
   name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
