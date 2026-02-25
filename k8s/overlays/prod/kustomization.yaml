@@ -4,17 +4,11 @@ kind: Kustomization
 resources:
 - ../../base
 
-
 images:
-- digest: sha256:9b722e6db958133874a8d22b78a9075a2865b0c95952a030cc83c75f3a20c3a1
-  name: backend
+- name: backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-- digest: sha256:2a49d24705d904cd323e347627ba57cfb3d710cd1c28453364a01642239dce58
-  name: frontend
+  digest: sha256:ffd5312e645d9a86ab5f97e2bdc3864b8b9665f61f2204497e26c160a8b794a3
+
+- name: frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
-- digest: sha256:e71d5897214ca6bee9a00c12088b5b07ae1d2ba28c5999a80ed8a39e66f7c360
-  name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-- digest: sha256:2abc2afa4f18137099e86d55c45638c9e7de65bb7322690c1ab52a78c4731d1c
-  name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
-  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
+  digest: sha256:a1519185d544354c78dd4629e787a667b5968ae7eccdf4204ee10fb270078de3
