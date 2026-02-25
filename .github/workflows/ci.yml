@@ -133,6 +133,9 @@ jobs:
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        # Para capturar el digest de la Imagen
+        provenance: false
+        sbom: false        
 
     # ============================
     # BUILD & PUSH FRONTEND
@@ -150,6 +153,9 @@ jobs:
           API_URL=http://backend:3000
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        # Para capturar el digest de la Imagen
+        provenance: false
+        sbom: false        
 
     # ============================
     # SBOM GENERATION
@@ -237,15 +243,15 @@ jobs:
       working-directory: k8s/overlays/prod
       run: |
         # Obtenemos los digests de los outputs del job anterior
-        BACKEND_SHA="${{ needs.build-and-push.outputs.backend_digest }}"
+        BACKEND_SHA="${{ needs.build-and-push.outputs.backend_digest }}"        
         FRONTEND_SHA="${{ needs.build-and-push.outputs.frontend_digest }}"  
 
         echo "Actualizando Backend a: $BACKEND_DIGEST"
         echo "Actualizando Frontend a: $FRONTEND_DIGEST"
         
-        # OPCIÓN SEGURA: Usamos kustomize especificando name y newName para evitar confusiones con la firma
-        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ needs.build-and-push.outputs.backend_digest }}
-        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ needs.build-and-push.outputs.frontend_digest }}
+        # Kustomize buscará la imagen con nombre "backend" y actualizará su SHA
+        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_SHA
+        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA
 
     - name: Commit and push changes
       run: |
