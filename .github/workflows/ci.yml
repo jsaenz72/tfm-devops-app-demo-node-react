@@ -201,3 +201,37 @@ jobs:
       run: |
         cosign sign --yes \
         ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.build-frontend.outputs.digest }}
+
+    # ============================
+    # CD - UPDATE MANIFESTS (GIT OPS)
+    # ============================
+    - name: Update K8s Manifests (GitOps)
+      if: github.event_name == 'push' # Solo actualizamos el despliegue al hacer push, no en PRs
+      run: |
+        # Instalamos Kustomize
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        
+        # Actualizamos el digest del Backend en el base o overlay correspondiente
+        # Usamos el digest exacto de la construcción para máxima inmutabilidad
+        ./kustomize edit set image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.build-backend.outputs.digest }}
+        
+        # Actualizamos el digest del Frontend
+        ./kustomize edit set image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.build-frontend.outputs.digest }}
+        
+        # Configuramos Git y hacemos Push del cambio del archivo kustomization.yaml
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "chore(cd): update images digest to backend@${{ steps.build-backend.outputs.digest }} and frontend@${{ steps.build-frontend.outputs.digest }}"
+        git push
+      # Ajusta el path si tu kustomization.yaml está en una subcarpeta específica como k8s/base
+      working-directory: . 
+
+    # ============================
+    # DORA METRICS
+    # ============================
+    - name: Push deployment event to Prometheus
+      if: github.ref == 'refs/heads/main' && success()
+      run: |
+        echo "Pushing DORA metrics..."
+        # Aquí iría tu comando curl al Pushgateway (asegúrate de que la URL sea accesible)

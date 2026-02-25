@@ -1,0 +1,30 @@
+# k8s/monitoring/dora-dashboard-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dora-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  dora.json: |
+    {
+      "title": "DORA Metrics",
+      "panels": [
+        {
+          "title": "Deployment Frequency (per week)",
+          "type": "stat",
+          "targets": [{"expr": "increase(dora_deployments_total[7d])"}]
+        },
+        {
+          "title": "Lead Time for Changes (avg hours)",
+          "type": "stat",
+          "targets": [{"expr": "avg_over_time(dora_lead_time_seconds[7d]) / 3600"}]
+        },
+        {
+          "title": "Change Failure Rate",
+          "type": "stat",
+          "targets": [{"expr": "rate(dora_deployment_failures_total[30d]) / rate(dora_deployments_total[30d])"}]
+        }
+      ]
+    }
