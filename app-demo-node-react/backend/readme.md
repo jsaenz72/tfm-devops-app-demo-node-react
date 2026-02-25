@@ -144,6 +144,7 @@ k3d cluster delete tfm-gitops
 
 Verifica:
 kubectl get nodes 
+kubectl get rollout backend -n demo-app
 (Debe fallar)
 
 🏗 FASE 2 — Crear cluster limpio
