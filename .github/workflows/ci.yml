@@ -14,7 +14,9 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
+    outputs:
+      backend_digest: ${{ steps.build-backend.outputs.digest }}
+      frontend_digest: ${{ steps.build-frontend.outputs.digest }}
     permissions:
       contents: write
       packages: write
@@ -243,5 +245,5 @@ jobs:
         git config user.email "github-actions@github.com"
         git add .
         git commit -m "chore(cd): update image digests [CI]" || echo "No changes to commit"
-        git pull --rebase origin develop
-        git push origin develop
+        git pull --rebase origin ${{ github.ref_name }}
+        git push origin ${{ github.ref_name }}
