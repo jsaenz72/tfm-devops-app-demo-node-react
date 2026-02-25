@@ -239,20 +239,38 @@ jobs:
         curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
         sudo mv kustomize /usr/local/bin/
 
-    - name: Update image digests
+    - name: Resolve Backend digest from GHCR
+      run: |
+        BACKEND_SHA=$(docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest --format '{{json .Manifest.Digest}}' | tr -d '"')
+        echo "Backend digest: $BACKEND_SHA"
+        echo "BACKEND_SHA=$BACKEND_SHA" >> $GITHUB_ENV
+
+    - name: Resolve Frontend digest from GHCR
+      run: |
+        FRONTEND_SHA=$(docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest --format '{{json .Manifest.Digest}}' | tr -d '"')
+        echo "Frontend digest: $FRONTEND_SHA"
+        echo "FRONTEND_SHA=$FRONTEND_SHA" >> $GITHUB_ENV
+
+    - name: Update image digests in Kustomization
       working-directory: k8s/overlays/prod
       run: |
-        # Obtenemos los digests de los outputs del job anterior
-        BACKEND_SHA="${{ needs.build-and-push.outputs.backend_digest }}"        
-        FRONTEND_SHA="${{ needs.build-and-push.outputs.frontend_digest }}"  
-
-        echo "Actualizando Backend a: $BACKEND_DIGEST"
-        echo "Actualizando Frontend a: $FRONTEND_DIGEST"
-        
-        # Kustomize buscará la imagen con nombre "backend" y actualizará su SHA
+        echo "Actualizando Backend a: $BACKEND_SHA"
+        echo "Actualizando Frontend a: $FRONTEND_SHA"
         kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_SHA
-        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA
+        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA        
 
+    - name: Verify Backend Image Signature
+      run: |
+        echo "Verificando firma de Backend en digest: $BACKEND_SHA"
+        cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_SHA \
+          --key cosign.pub || exit 1
+
+    - name: Verify Frontend Image Signature
+      run: |
+        echo "Verificando firma de Frontend en digest: $FRONTEND_SHA"
+        cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA \
+          --key cosign.pub || exit 1        
+        
     - name: Commit and push changes
       run: |
         git config user.name "github-actions"
