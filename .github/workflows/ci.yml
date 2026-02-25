@@ -237,15 +237,15 @@ jobs:
       working-directory: k8s/overlays/prod
       run: |
         # Obtenemos los digests de los outputs del job anterior
-        BACKEND_DIGEST="${{ needs.build-and-push.outputs.backend_digest }}"
-        FRONTEND_DIGEST="${{ needs.build-and-push.outputs.frontend_digest }}"
+        BACKEND_SHA="${{ needs.build-and-push.outputs.backend_digest }}"
+        FRONTEND_SHA="${{ needs.build-and-push.outputs.frontend_digest }}"  
 
         echo "Actualizando Backend a: $BACKEND_DIGEST"
         echo "Actualizando Frontend a: $FRONTEND_DIGEST"
-
+        
         # OPCIÓN SEGURA: Usamos kustomize especificando name y newName para evitar confusiones con la firma
-        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_DIGEST
-        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_DIGEST
+        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ needs.build-and-push.outputs.backend_digest }}
+        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ needs.build-and-push.outputs.frontend_digest }}
 
     - name: Commit and push changes
       run: |
