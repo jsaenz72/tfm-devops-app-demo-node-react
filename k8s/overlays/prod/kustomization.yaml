@@ -2,5 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
-  - ../../monitoring
+- ../../base
+- ../../monitoring
+images:
+- digest: sha256:793d6bffd1e30ca7c0faf6a5f5bb4b22e240ea717e0aae39990f0443cb72433b
+  name: backend
+  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
+- digest: sha256:3a2a4fe5a52b5709e4e2d4b64de8cf4e3dbb9754bd6a90330c8b41b3c7c8ebb6
+  name: frontend
+  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
