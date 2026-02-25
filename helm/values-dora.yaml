@@ -1,0 +1,26 @@
+grafana:
+  defaultDashboardsEnabled: false
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'dora'
+          orgId: 1
+          folder: 'DORA Metrics'
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/dora
+
+  dashboards:
+    dora:
+      dora-metrics:
+        json: |
+          {
+            "title": "DORA Metrics",
+            "schemaVersion": 38,
+            "version": 1,
+            "panels": []
+          }

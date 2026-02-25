@@ -1,2 +1,3 @@
-resources:
   - backend-servicemonitor.yaml
+  - argocd-servicemonitor.yaml
+  - delivery-dashboard-configmap.yaml
