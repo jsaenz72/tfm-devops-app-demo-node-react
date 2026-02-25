@@ -4,7 +4,3 @@ namespace: demo-app
 resources:
 - deployment.yaml
 - service.yaml
-images:
-- digest: sha256:35c9bf1572fbb97acbf99783a10b044730f372f0039ddd63ecdfc10a1af80923
-  name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend
-  newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend

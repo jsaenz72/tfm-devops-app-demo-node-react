@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
 - ../../base
 
-
 images: 
 - name: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend 
