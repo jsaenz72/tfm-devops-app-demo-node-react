@@ -209,11 +209,11 @@ jobs:
   # ==========================================================
   # CD - UPDATE MANIFESTS (GIT OPS)
   # ==========================================================
+  
   gitops-update:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.event_name == 'push'
-    # IMPORTANTE: Volver a declarar las variables env para este Job
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
@@ -226,7 +226,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Asegura historial para el push
+        fetch-depth: 0
 
     - name: Install Kustomize
       run: |
@@ -236,18 +236,24 @@ jobs:
     - name: Update image digests
       working-directory: k8s/overlays/prod
       run: |
-        # Usamos el nombre exacto que tienes en el kustomization.yaml (backend y frontend)
-        # Y le pasamos la URL completa + el digest correcto que viene del job anterior
-        
-        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ needs.build-and-push.outputs.backend_digest }}
-        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ needs.build-and-push.outputs.frontend_digest }}
+        # Obtenemos los digests de los outputs del job anterior
+        BACKEND_DIGEST="${{ needs.build-and-push.outputs.backend_digest }}"
+        FRONTEND_DIGEST="${{ needs.build-and-push.outputs.frontend_digest }}"
+
+        echo "Actualizando Backend a: $BACKEND_DIGEST"
+        echo "Actualizando Frontend a: $FRONTEND_DIGEST"
+
+        # OPCIÓN SEGURA: Usamos kustomize especificando name y newName para evitar confusiones con la firma
+        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_DIGEST
+        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_DIGEST
 
     - name: Commit and push changes
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add .
-        git commit -m "chore(cd): update image digests to ${{ needs.build-and-push.outputs.backend_digest }} [CI]" || echo "No changes to commit"
-        # Pull con rebase para evitar conflictos si hubo otros cambios
+        # Verificamos qué se cambió para el log
+        git status
+        git commit -m "chore(cd): update image digests to current build [CI]" || echo "No changes to commit"
         git pull --rebase origin ${{ github.ref_name }}
         git push origin ${{ github.ref_name }}
