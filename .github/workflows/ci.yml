@@ -259,17 +259,22 @@ jobs:
         kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_SHA
         kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA        
 
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3
+      with:
+        cosign-release: 'v2.2.4'
+
     - name: Verify Backend Image Signature
       run: |
         echo "Verificando firma de Backend en digest: $BACKEND_SHA"
         cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_SHA \
-          --key cosign.pub || exit 1
+          --key cosign.pub
 
     - name: Verify Frontend Image Signature
       run: |
         echo "Verificando firma de Frontend en digest: $FRONTEND_SHA"
         cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_SHA \
-          --key cosign.pub || exit 1        
+          --key cosign.pub
         
     - name: Commit and push changes
       run: |
