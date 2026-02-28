@@ -157,25 +157,41 @@ jobs:
 
     # ============================
     # GET REAL DIGESTS FROM REGISTRY
-    # (fuente de verdad — evita desincronización con build-push-action)
+    #
+    # FIX: Usamos el tag de rama (branch) que es estable y apunta
+    # siempre a la imagen real — nunca a archivos .sig de cosign.
+    # Filtramos por mediaType para garantizar que obtenemos el
+    # manifest de la imagen OCI y no un artefacto de firma.
     # ============================
     - name: Get real Backend digest from registry
       id: get-backend-digest
       run: |
-        TAG=$(echo "${{ steps.meta-backend.outputs.tags }}" | head -n1)
-        echo "Inspecting tag: $TAG"
-        DIGEST=$(docker buildx imagetools inspect "$TAG" \
-          --format '{{json .Manifest}}' | jq -r '.digest')
+        BRANCH_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.ref_name }}"
+        echo "Inspecting: $BRANCH_TAG"
+        DIGEST=$(docker buildx imagetools inspect "$BRANCH_TAG" \
+          --format '{{json .Manifest}}' \
+          | jq -r 'select(.mediaType | test("vnd.docker|vnd.oci.image.manifest")) | .digest' \
+          | head -n1)
+        if [ -z "$DIGEST" ]; then
+          echo "ERROR: Could not extract Backend digest!"
+          exit 1
+        fi
         echo "Backend digest: $DIGEST"
         echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
     - name: Get real Frontend digest from registry
       id: get-frontend-digest
       run: |
-        TAG=$(echo "${{ steps.meta-frontend.outputs.tags }}" | head -n1)
-        echo "Inspecting tag: $TAG"
-        DIGEST=$(docker buildx imagetools inspect "$TAG" \
-          --format '{{json .Manifest}}' | jq -r '.digest')
+        BRANCH_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.ref_name }}"
+        echo "Inspecting: $BRANCH_TAG"
+        DIGEST=$(docker buildx imagetools inspect "$BRANCH_TAG" \
+          --format '{{json .Manifest}}' \
+          | jq -r 'select(.mediaType | test("vnd.docker|vnd.oci.image.manifest")) | .digest' \
+          | head -n1)
+        if [ -z "$DIGEST" ]; then
+          echo "ERROR: Could not extract Frontend digest!"
+          exit 1
+        fi
         echo "Frontend digest: $DIGEST"
         echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
