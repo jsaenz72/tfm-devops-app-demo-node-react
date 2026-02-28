@@ -167,6 +167,23 @@ jobs:
         cache-to: type=gha,mode=max
         provenance: false
         sbom: false
+    - name: DEBUG COMPLETO - Raw metadata
+      run: |
+        echo "=== RAW METADATA BACKEND ==="
+        echo '${{ steps.build-backend.outputs.metadata }}' | jq .
+        echo ""
+        echo "=== RAW METADATA FRONTEND ==="
+        echo '${{ steps.build-frontend.outputs.metadata }}' | jq .
+        echo ""
+        echo "=== OUTPUT .digest directo ==="
+        echo "Backend digest output:  ${{ steps.build-backend.outputs.digest }}"
+        echo "Frontend digest output: ${{ steps.build-frontend.outputs.digest }}"
+        echo ""
+        echo "=== TAGS generados ==="
+        echo "Backend tags:"
+        echo "${{ steps.meta-backend.outputs.tags }}"
+        echo "Frontend tags:"
+        echo "${{ steps.meta-frontend.outputs.tags }}"        
 
     # ============================
     # BUILD & PUSH FRONTEND
@@ -263,6 +280,7 @@ jobs:
         echo "Frontend (action): ${{ steps.build-frontend.outputs.digest }}"
         echo "============================================"
 
+        
     # ============================
     # SBOM GENERATION
     # ============================
