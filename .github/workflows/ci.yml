@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
+      id-token: write        # Requerido para keyless signing con Sigstore/Fulcio
       security-events: write
 
     steps:
@@ -222,20 +222,42 @@ jobs:
         sarif_file: trivy-backend.sarif
 
     # ============================
-    # COSIGN SIGNING
+    # COSIGN SIGNING (keyless — Sigstore/Fulcio)
+    # No requiere cosign.pub ni claves locales.
+    # Usa el OIDC token de GitHub Actions automáticamente
+    # gracias al permiso id-token: write definido arriba.
     # ============================
     - name: Install Cosign
       uses: sigstore/cosign-installer@v3
 
-    - name: Sign Backend Image
+    - name: Sign Backend Image (keyless)
       run: |
         cosign sign --yes \
-        ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
 
-    - name: Sign Frontend Image
+    - name: Sign Frontend Image (keyless)
       run: |
         cosign sign --yes \
-        ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.get-frontend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.get-frontend-digest.outputs.digest }}
+
+    # ============================
+    # COSIGN VERIFICATION (keyless)
+    # Verifica la firma usando el certificado OIDC emitido
+    # por GitHub Actions — sin necesidad de cosign.pub.
+    # ============================
+    - name: Verify Backend Image signature (keyless)
+      run: |
+        cosign verify \
+          --certificate-identity-regexp="https://github.com/${{ github.repository }}/*" \
+          --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
+
+    - name: Verify Frontend Image signature (keyless)
+      run: |
+        cosign verify \
+          --certificate-identity-regexp="https://github.com/${{ github.repository }}/*" \
+          --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.get-frontend-digest.outputs.digest }}
 
     # ============================
     # DORA METRICS
