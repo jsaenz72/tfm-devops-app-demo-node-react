@@ -1,5 +1,31 @@
 name: CI/CD Pipeline - DevSecOps
 
+# =============================================================
+# SOLUCIÓN DEFINITIVA AL PROBLEMA DE DIGESTS
+# =============================================================
+# CAUSA RAÍZ: El digest se extraía DESPUÉS de que cosign firmaba
+# la imagen. Al firmar, cosign publica un artefacto .sig en el
+# registry. Cualquier inspección posterior del tag (branch, sha)
+# puede resolver al digest del .sig en lugar de la imagen real.
+#
+# SOLUCIÓN: Usar el output "metadata" de build-push-action para
+# extraer el digest via "containerimage.digest". Este output se
+# genera DURANTE el build+push, antes de cualquier operación de
+# cosign, y contiene el digest real de la imagen en el registry.
+#
+# ORDEN CORRECTO:
+#   1. Build + Push  →  digest real capturado en metadata
+#   2. Extraer digest de metadata (fuente de verdad inmutable)
+#   3. Trivy scan   (usa el digest real)
+#   4. Cosign sign  (usa el digest real → publica .sig)
+#   5. Cosign verify (usa el mismo digest real)
+#   6. GitOps update (usa el mismo digest real)
+#
+# REFERENCIA: https://github.com/docker/build-push-action/issues/461
+#             https://code.mendhak.com/understanding-sigstore-cosign-as-a-beginner/
+#             https://www.chainguard.dev/unchained/zero-friction-keyless-signing-with-github-actions
+# =============================================================
+
 on:
   push:
     branches: [ main, develop ]
@@ -15,8 +41,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     outputs:
-      backend_digest: ${{ steps.get-backend-digest.outputs.digest }}
-      frontend_digest: ${{ steps.get-frontend-digest.outputs.digest }}
+      # Los outputs apuntan al step que extrae desde metadata,
+      # que se ejecuta ANTES de cosign. Esto es crítico.
+      backend_digest: ${{ steps.extract-backend-digest.outputs.digest }}
+      frontend_digest: ${{ steps.extract-frontend-digest.outputs.digest }}
     permissions:
       contents: write
       packages: write
@@ -44,7 +72,7 @@ jobs:
           app-demo-node-react/frontend/package-lock.json
 
     # ============================
-    # BACKEND
+    # BACKEND TESTS
     # ============================
     - name: Install backend dependencies
       working-directory: app-demo-node-react/backend
@@ -61,7 +89,7 @@ jobs:
         path: app-demo-node-react/backend/coverage/
 
     # ============================
-    # FRONTEND
+    # FRONTEND TESTS
     # ============================
     - name: Install frontend dependencies
       working-directory: app-demo-node-react/frontend
@@ -121,6 +149,10 @@ jobs:
 
     # ============================
     # BUILD & PUSH BACKEND
+    # El output "metadata" contiene "containerimage.digest"
+    # que es el digest real generado durante el push.
+    # Este valor se captura AQUÍ, antes de cualquier operación
+    # posterior que pueda contaminar el registry (.sig de cosign).
     # ============================
     - name: Build and push Backend
       id: build-backend
@@ -156,56 +188,80 @@ jobs:
         sbom: false
 
     # ============================
-    # GET REAL DIGESTS FROM REGISTRY
+    # EXTRACCIÓN DE DIGESTS REALES
     #
-    # FIX: Usamos el tag de rama (branch) que es estable y apunta
-    # siempre a la imagen real — nunca a archivos .sig de cosign.
-    # Filtramos por mediaType para garantizar que obtenemos el
-    # manifest de la imagen OCI y no un artefacto de firma.
+    # SOLUCIÓN DEFINITIVA:
+    # Leemos el campo "containerimage.digest" del output "metadata"
+    # de build-push-action. Este campo se genera durante el push
+    # y representa el digest real de la imagen en el registry.
+    # Es inmutable: no cambia cuando cosign publica el .sig después.
+    #
+    # NO usamos imagetools inspect, skopeo, ni docker pull porque
+    # todos resuelven el tag en tiempo real, y si cosign ya publicó
+    # el .sig, el tag puede apuntar al artefacto .sig.
     # ============================
-    - name: Get real Backend digest from registry
-      id: get-backend-digest
+    - name: Extract real Backend digest from build metadata
+      id: extract-backend-digest
       run: |
-        BRANCH_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.ref_name }}"
-        echo "Inspecting: $BRANCH_TAG"
-        DIGEST=$(docker buildx imagetools inspect "$BRANCH_TAG" \
-          --format '{{json .Manifest}}' \
-          | jq -r 'select(.mediaType | test("vnd.docker|vnd.oci.image.manifest")) | .digest' \
-          | head -n1)
-        if [ -z "$DIGEST" ]; then
-          echo "ERROR: Could not extract Backend digest!"
+        # metadata es un JSON con "containerimage.digest" entre otros campos
+        METADATA='${{ steps.build-backend.outputs.metadata }}'
+        DIGEST=$(echo "$METADATA" | jq -r '."containerimage.digest"')
+
+        echo "=== Backend metadata ==="
+        echo "$METADATA" | jq .
+
+        if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+          echo "ERROR: containerimage.digest is empty or null in metadata!"
+          echo "Full metadata: $METADATA"
           exit 1
         fi
-        echo "Backend digest: $DIGEST"
-        echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
-    - name: Get real Frontend digest from registry
-      id: get-frontend-digest
-      run: |
-        BRANCH_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.ref_name }}"
-        echo "Inspecting: $BRANCH_TAG"
-        DIGEST=$(docker buildx imagetools inspect "$BRANCH_TAG" \
-          --format '{{json .Manifest}}' \
-          | jq -r 'select(.mediaType | test("vnd.docker|vnd.oci.image.manifest")) | .digest' \
-          | head -n1)
-        if [ -z "$DIGEST" ]; then
-          echo "ERROR: Could not extract Frontend digest!"
+        if [[ "$DIGEST" != sha256:* ]]; then
+          echo "ERROR: Digest format invalid (expected sha256:...): $DIGEST"
           exit 1
         fi
-        echo "Frontend digest: $DIGEST"
+
+        echo "Backend digest confirmed: $DIGEST"
+        echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+
+    - name: Extract real Frontend digest from build metadata
+      id: extract-frontend-digest
+      run: |
+        METADATA='${{ steps.build-frontend.outputs.metadata }}'
+        DIGEST=$(echo "$METADATA" | jq -r '."containerimage.digest"')
+
+        echo "=== Frontend metadata ==="
+        echo "$METADATA" | jq .
+
+        if [ -z "$DIGEST" ] || [ "$DIGEST" = "null" ]; then
+          echo "ERROR: containerimage.digest is empty or null in metadata!"
+          echo "Full metadata: $METADATA"
+          exit 1
+        fi
+
+        if [[ "$DIGEST" != sha256:* ]]; then
+          echo "ERROR: Digest format invalid (expected sha256:...): $DIGEST"
+          exit 1
+        fi
+
+        echo "Frontend digest confirmed: $DIGEST"
         echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
     # ============================
-    # DEBUG - Verify digests
+    # DEBUG - Confirmar digests antes de continuar
     # ============================
-    - name: Debug digest values
+    - name: Debug - Confirm digests before cosign
       run: |
-        echo "=== build-push-action outputs (reference) ==="
+        echo "============================================"
+        echo "DIGESTS CAPTURADOS (antes de cosign)"
+        echo "============================================"
+        echo "Backend:  ${{ steps.extract-backend-digest.outputs.digest }}"
+        echo "Frontend: ${{ steps.extract-frontend-digest.outputs.digest }}"
+        echo ""
+        echo "Referencia build-push-action (por si acaso):"
         echo "Backend (action):  ${{ steps.build-backend.outputs.digest }}"
         echo "Frontend (action): ${{ steps.build-frontend.outputs.digest }}"
-        echo "=== Real digests from registry (used for GitOps) ==="
-        echo "Backend (real):  ${{ steps.get-backend-digest.outputs.digest }}"
-        echo "Frontend (real): ${{ steps.get-frontend-digest.outputs.digest }}"
+        echo "============================================"
 
     # ============================
     # SBOM GENERATION
@@ -224,11 +280,12 @@ jobs:
 
     # ============================
     # SECURITY SCAN (TRIVY + SARIF)
+    # Usa el digest extraído de metadata, no del registry
     # ============================
     - name: Run Trivy scan Backend
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.extract-backend-digest.outputs.digest }}
         format: 'sarif'
         output: 'trivy-backend.sarif'
 
@@ -239,41 +296,50 @@ jobs:
 
     # ============================
     # COSIGN SIGNING (keyless — Sigstore/Fulcio)
-    # No requiere cosign.pub ni claves locales.
-    # Usa el OIDC token de GitHub Actions automáticamente
-    # gracias al permiso id-token: write definido arriba.
+    #
+    # Se ejecuta DESPUÉS de extraer los digests.
+    # Al firmar, cosign publica un artefacto .sig en el registry.
+    # Si extrajéramos el digest DESPUÉS de este paso, podríamos
+    # obtener el digest del .sig en lugar de la imagen real.
     # ============================
     - name: Install Cosign
       uses: sigstore/cosign-installer@v3
 
     - name: Sign Backend Image (keyless)
+      env:
+        DIGEST: ${{ steps.extract-backend-digest.outputs.digest }}
       run: |
         cosign sign --yes \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${DIGEST}
 
     - name: Sign Frontend Image (keyless)
+      env:
+        DIGEST: ${{ steps.extract-frontend-digest.outputs.digest }}
       run: |
         cosign sign --yes \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.get-frontend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${DIGEST}
 
     # ============================
     # COSIGN VERIFICATION (keyless)
-    # Verifica la firma usando el certificado OIDC emitido
-    # por GitHub Actions — sin necesidad de cosign.pub.
+    # Verifica con el mismo digest que usamos para firmar
     # ============================
     - name: Verify Backend Image signature (keyless)
+      env:
+        DIGEST: ${{ steps.extract-backend-digest.outputs.digest }}
       run: |
         cosign verify \
           --certificate-identity-regexp="https://github.com/${{ github.repository }}/*" \
           --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${{ steps.get-backend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@${DIGEST}
 
     - name: Verify Frontend Image signature (keyless)
+      env:
+        DIGEST: ${{ steps.extract-frontend-digest.outputs.digest }}
       run: |
         cosign verify \
           --certificate-identity-regexp="https://github.com/${{ github.repository }}/*" \
           --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${{ steps.get-frontend-digest.outputs.digest }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@${DIGEST}
 
     # ============================
     # DORA METRICS
@@ -312,23 +378,27 @@ jobs:
         sudo mv kustomize /usr/local/bin/
 
     # ============================
-    # DEBUG - Verify received digests
+    # DEBUG - Verificar digests recibidos
     # ============================
     - name: Debug - Print received digests
       run: |
-        echo "=== Digests received from build-and-push job ==="
+        echo "============================================"
+        echo "DIGESTS RECIBIDOS EN GITOPS JOB"
+        echo "============================================"
         echo "Backend:  ${{ needs.build-and-push.outputs.backend_digest }}"
         echo "Frontend: ${{ needs.build-and-push.outputs.frontend_digest }}"
-        echo "=== Current kustomization.yaml ==="
+        echo "============================================"
+        echo ""
+        echo "=== kustomization.yaml ACTUAL ==="
         cat k8s/overlays/prod/kustomization.yaml
 
-    - name: Update image digests
+    - name: Update image digests in kustomization.yaml
       working-directory: k8s/overlays/prod
       run: |
         BACKEND_DIGEST="${{ needs.build-and-push.outputs.backend_digest }}"
         FRONTEND_DIGEST="${{ needs.build-and-push.outputs.frontend_digest }}"
 
-        # Validar que los digests no estén vacíos
+        # ── Validación: no vacíos ──────────────────────────────
         if [ -z "$BACKEND_DIGEST" ] || [ -z "$FRONTEND_DIGEST" ]; then
           echo "ERROR: One or both digests are empty!"
           echo "Backend:  '$BACKEND_DIGEST'"
@@ -336,9 +406,9 @@ jobs:
           exit 1
         fi
 
-        # Validar formato sha256:...
+        # ── Validación: formato sha256:... ─────────────────────
         if [[ "$BACKEND_DIGEST" != sha256:* ]] || [[ "$FRONTEND_DIGEST" != sha256:* ]]; then
-          echo "ERROR: Digest format is invalid (expected sha256:...)!"
+          echo "ERROR: Digest format invalid (expected sha256:...)!"
           echo "Backend:  '$BACKEND_DIGEST'"
           echo "Frontend: '$FRONTEND_DIGEST'"
           exit 1
@@ -347,17 +417,21 @@ jobs:
         echo "Updating Backend  → $BACKEND_DIGEST"
         echo "Updating Frontend → $FRONTEND_DIGEST"
 
-        kustomize edit set image backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_DIGEST
-        kustomize edit set image frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_DIGEST
+        kustomize edit set image \
+          backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}@$BACKEND_DIGEST
+
+        kustomize edit set image \
+          frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}@$FRONTEND_DIGEST
 
     # ============================
-    # DEBUG - Verify kustomization after update
+    # DEBUG - Verificar resultado
     # ============================
     - name: Debug - kustomization.yaml after update
       working-directory: k8s/overlays/prod
       run: |
         echo "=== kustomization.yaml AFTER update ==="
         cat kustomization.yaml
+        echo ""
         echo "=== Git diff ==="
         git diff
 
@@ -367,6 +441,7 @@ jobs:
         git config user.email "github-actions@github.com"
         git add k8s/overlays/prod/kustomization.yaml
         git status
-        git commit -m "chore(cd): update image digests to current build [CI]" || echo "No changes to commit"
+        git commit -m "chore(cd): update image digests to current build [CI]" \
+          || echo "No changes to commit"
         git pull --rebase origin ${{ github.ref_name }}
         git push origin ${{ github.ref_name }}
