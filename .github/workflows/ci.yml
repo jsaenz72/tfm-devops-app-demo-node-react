@@ -4,29 +4,7 @@ name: CI/CD Pipeline - DevSecOps
 # SOLUCIÓN DEFINITIVA v4 - DIAGNÓSTICO CONFIRMADO
 # =============================================================
 #
-# PROBLEMA RAÍZ CONFIRMADO:
-#   build-push-action con provenance:false devuelve en su output
-#   "digest" y en "metadata > containerimage.digest" el digest
-#   del artefacto interno de buildkit, NO el RepoDigest final
-#   que el registry asigna a la imagen pusheada.
-#   Ref: https://github.com/docker/build-push-action/issues/461
-#
-# ADEMÁS: cosign sign publica un tag .sig cuyo nombre es
-#   sha256-<DIGEST_IMAGEN>.sig, donde <DIGEST_IMAGEN> es el
-#   digest real de la imagen. Esto significa que el digest
-#   que aparece en el nombre del .sig ES el digest correcto
-#   de la imagen — pero nuestro pipeline lo estaba leyendo
-#   al revés (tomaba el digest DEL .sig en lugar de usarlo
-#   como referencia).
-#
-# SOLUCIÓN DEFINITIVA:
-#   Usar `crane digest` INMEDIATAMENTE después del push y
-#   ANTES de que cosign firme. crane consulta directamente
-#   el manifest del registry por tag y devuelve el RepoDigest
-#   real. Al ejecutarse antes de cosign, no hay .sig aún
-#   que pueda contaminar el resultado.
-#
-# ORDEN DE EJECUCIÓN (crítico):
+# ORDEN DE EJECUCIÓN:
 #   1. Build backend  → push
 #   2. crane digest backend   ← captura digest real (sin .sig)
 #   3. Build frontend → push
