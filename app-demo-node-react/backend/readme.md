@@ -265,3 +265,6 @@ Visit https://github.com/prometheus-operator/kube-prometheus for instructions on
 
 
 kubectl describe rollout backend -n demo-app
+
+
+kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=jsaenz72 --docker-password=MAdopa10# --docker-email=jsaenz72@hotmail.com -n demo-app
