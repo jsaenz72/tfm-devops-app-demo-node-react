@@ -64,25 +64,5 @@ router.get('/autorizacion', (req, res) => {
   }
 });
 
-router.get('/autorizacion2', (req, res) => {
-  try {
-    const claveAcceso = generarClaveAccesoMock();
-
-    res.status(200).json({
-      estado: 'AUTORIZADO',
-      numeroAutorizacion: claveAcceso,
-      claveAcceso: claveAcceso,
-      fechaAutorizacion: new Date().toISOString(),
-      ambiente: 'PRODUCCIÓN',
-      mensaje: 'Autorización generada mediante mock (TFM)'
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: 'Error al generar autorización mock'
-    });
-  }
-});
 
 export default router;
