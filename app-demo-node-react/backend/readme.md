@@ -178,11 +178,23 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d ; echo
 
 ✅ Argo Rollouts
+1️⃣ Crear el namespace (si no existe)
 kubectl create namespace argo-rollouts
+2️⃣ Instalar Argo Rollouts (manifiesto oficial)
 kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+3️⃣ Instalar el Dashboard
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/dashboard-install.yaml
+4️⃣ Ahora sí puedes hacer port-forward
+kubectl -n argo-rollouts port-forward deployment/argo-rollouts-dashboard 3100:3100
+# 👉 https://localhost:3100
+# Verificar que los pods estén corriendo
+kubectl get pods -n argo-rollouts
+# consultar el despliegue desde la linea de comandos
+kubectl argo rollouts get rollout demo-canary
+kubectl argo rollouts dashboard
+
 
 ✅ Argo Rollouts -- NEW VERSION
-
 curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
 chmod +x kubectl-argo-rollouts-linux-amd64
 sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
@@ -251,26 +263,10 @@ NOTES:
 kube-prometheus-stack has been installed. Check its status by running:
   kubectl --namespace monitoring get pods -l "release=monitoring"
 
-Get Grafana 'admin' user password by running:
-
-  kubectl --namespace monitoring get secrets monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
-
 Access Grafana local instance:
-
   export POD_NAME=$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=monitoring" -oname)
   kubectl --namespace monitoring port-forward $POD_NAME 3000
 
-Get your grafana admin user password by running:
 
-  kubectl get secret --namespace monitoring -l app.kubernetes.io/component=admin-secret -o jsonpath="{.items[0].data.admin-password}" | base64 --decode ; echo
-
-
-Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
-# ARGOCD
-3FVvwCKHfNzHEw6B
-
-
-kubectl describe rollout backend -n demo-app
-
-
+# Secret GHCR
 kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=jsaenz72 --docker-password=MAdopa10# --docker-email=jsaenz72@hotmail.com -n demo-app
