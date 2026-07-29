@@ -1,5 +1,0 @@
-resources:
-  - backend-servicemonitor.yaml
-  - argocd-servicemonitor.yaml
-  - dora-dashboard-configmap.yaml
-  

@@ -3,13 +3,16 @@ kind: Kustomization
 resources:
 - ../../base
 - ../../monitoring
+
 resources:
 - ../../base
 - ../../monitoring
+
+
 images:
-- digest: sha256:1ccaeb2405799f024309c32d1f62819b86c8220ba95faadbf08d3b52a6bc2f60
+- digest: sha256:b08f37621eae7af525e504d68bf313317b89ec79adbcf0b270d3a23c33645440
   name: backend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
-- digest: sha256:7af61981723dcaec2c8823b711c54c8439559a6f41e675bea302a1370ddd2c26
+- digest: sha256:2e43920a579a7b8fbe3447fa2c8bd76d17cc24984541633d7f730e48c7665a21
   name: frontend
   newName: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/frontend

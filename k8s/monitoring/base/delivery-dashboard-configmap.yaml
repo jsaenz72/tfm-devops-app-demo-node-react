@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-metrics-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  delivery.json: |
+    {
+      "uid": "gitops-delivery",
+      "title": "GitOps Delivery Performance - Demo App",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Deployment Frequency (7d)",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "increase(argocd_app_sync_total{name=\"demo-app\"}[7d])"
+            }
+          ],
+          "gridPos": { "x": 0, "y": 0, "w": 8, "h": 6 }
+        },
+        {
+          "type": "stat",
+          "title": "Application Healthy",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "argocd_app_health_status{name=\"demo-app\",health_status=\"Healthy\"}"
+            }
+          ],
+          "gridPos": { "x": 8, "y": 0, "w": 8, "h": 6 }
+        },
+        {
+          "type": "stat",
+          "title": "Pod Restart Rate (30d)",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(kube_pod_container_status_restarts_total{namespace=\"demo-app\"}[30d])"
+            }
+          ],
+          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 }
+        }
+      ]
+    }
