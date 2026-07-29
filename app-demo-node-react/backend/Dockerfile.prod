@@ -1,7 +1,7 @@
 # ================================
 # ETAPA 1: BUILD (builder)
 # ================================
-FROM node:26.5.0-alpine
+FROM node:26.5.0-alpine AS builder
 
 # Arguments para metadata (pasados desde CI/CD)
 ARG BUILD_DATE
