@@ -11,9 +11,13 @@ ARG API_URL
 ENV API_URL=$API_URL
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+
+# Instalar TODAS las dependencias (incluye Webpack y Babel)
+RUN npm ci && npm cache clean --force
 
 COPY . .
+
+# Construir Webpack
 RUN npm run build
 
 # ================================
@@ -21,28 +25,10 @@ RUN npm run build
 # ================================
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-
-LABEL org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.authors="Jaime Sáenz" \
-      org.opencontainers.image.source="https://github.com/jsaenz72/tfm-devops-app-demo-node-react" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.revision="${VCS_REF}" \
-      org.opencontainers.image.title="Frontend App" \
-      org.opencontainers.image.description="React/Vite Frontend Application" \
-      org.opencontainers.image.licenses="MIT"
-
 RUN rm -f /etc/nginx/conf.d/default.conf
-
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
-
 EXPOSE 8080
-
 CMD ["nginx", "-g", "daemon off;"]
