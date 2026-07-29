@@ -5,15 +5,21 @@ metadata:
   namespace: demo-app
 spec:
   replicas: 2
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  minReadySeconds: 10
+
   selector:
     matchLabels:
       app: backend
+
   template:
     metadata:
       labels:
         app: backend
     spec:
       automountServiceAccountToken: false
+
       initContainers:
         - name: init-backend-data
           image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
@@ -32,6 +38,7 @@ spec:
           volumeMounts:
             - name: backend-data
               mountPath: /data
+
       containers:
         - name: backend
           image: ghcr.io/jsaenz72/tfm-devops-app-demo-node-react/backend
@@ -56,6 +63,7 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+
       volumes:
         - name: backend-data
           persistentVolumeClaim:
@@ -63,14 +71,18 @@ spec:
 
   strategy:
     canary:
-      # --- ESTA ES LA SECCIÓN NUEVA ---
-      analysis:
-        templates:
-          - templateName: success-rate # Debe coincidir con el nombre del AnalysisTemplate
-      # --------------------------------
+      canaryService: backend-canary
+      stableService: backend-stable
+
       steps:
         - setWeight: 10
         - pause: { duration: 30s }
+
+        - analysis:
+            templates:
+              - templateName: rollout-analysis
+
         - setWeight: 50
         - pause: { duration: 30s }
+
         - setWeight: 100

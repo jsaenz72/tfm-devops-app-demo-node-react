@@ -1,21 +1,87 @@
-# Archivo: k8s/base/backend/analysis-template.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: success-rate
+  name: rollout-analysis
   namespace: demo-app
 spec:
   metrics:
-  - name: error-rate-check
-    interval: 30s
-    successCondition: result[0] < 0.05
-    failureLimit: 2
-    provider:
-      prometheus:
-        address: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
-        query: |
-          (
-            sum(rate(http_requests_total{app="backend", status=~"5.*"}[1m])) 
-            / 
-            sum(rate(http_requests_total{app="backend"}[1m]))
-          ) or on() vector(0)  # <--- Esto evita el error de "slice index out of range"
+
+    # ============================
+    # 1. Error Rate (5xx)
+    # ============================
+    - name: error-rate
+      interval: 30s
+      count: 3
+      successCondition: result[0] < 0.05     # menos del 5% de errores
+      failureCondition: result[0] > 0.10     # más del 10% falla el rollout
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+          query: |
+            (
+              sum(rate(http_requests_total{status=~"5.."}[1m]))
+              /
+              sum(rate(http_requests_total[1m]))
+            ) or on() vector(0)
+
+    # ============================
+    # 2. Latencia P95
+    # ============================
+    - name: latency-p95
+      interval: 30s
+      count: 3
+      successCondition: result[0] < 0.300     # menos de 300ms
+      failureCondition: result[0] > 0.500     # más de 500ms falla
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+          query: |
+            histogram_quantile(
+              0.95,
+              sum(rate(http_request_duration_seconds_bucket[1m])) by (le)
+            ) or on() vector(0)
+
+    # ============================
+    # 3. Latencia P99
+    # ============================
+    - name: latency-p99
+      interval: 30s
+      count: 3
+      successCondition: result[0] < 0.600     # menos de 600ms
+      failureCondition: result[0] > 1.000     # más de 1s falla
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+          query: |
+            histogram_quantile(
+              0.99,
+              sum(rate(http_request_duration_seconds_bucket[1m])) by (le)
+            ) or on() vector(0)
+
+    # ============================
+    # 4. Throughput (RPS)
+    # ============================
+    - name: throughput-rps
+      interval: 30s
+      count: 3
+      successCondition: result[0] > 1        # al menos 1 request por segundo
+      failureCondition: result[0] < 0.2      # menos de 0.2 rps falla
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+          query: |
+            sum(rate(http_requests_total[1m])) or on() vector(0)
+
+    # ============================
+    # 5. Event Loop Lag (saturación)
+    # ============================
+    - name: event-loop-lag
+      interval: 30s
+      count: 3
+      successCondition: result[0] < 0.050     # menos de 50ms
+      failureCondition: result[0] > 0.150     # más de 150ms falla
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local
+          query: |
+            nodejs_eventloop_lag_mean_seconds or on() vector(0)

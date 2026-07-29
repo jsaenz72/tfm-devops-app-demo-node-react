@@ -4,6 +4,7 @@ namespace: demo-app
 resources:
 - rollout.yaml
 - service.yaml
+- service-canary.yaml
 - configmap.yaml
 - pvc-backend-data.yaml
 - analysis-template.yaml

@@ -152,16 +152,12 @@ k3d cluster create tfm-gitops --agents 2
 Configura kubeconfig si hace falta.
 
 Verifica:
-kubectl get nodes
+kubectl get nodes -A
+
 
 📦 FASE 3 — Instalar monitoring stack
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --create-namespace \
-  -f helm/kube-prometheus-values.yaml
+kubectl create namespace monitoring
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n monitoring
 
 Espera a que todo esté Running:
 kubectl get pods -n monitoring
@@ -170,6 +166,16 @@ kubectl get pods -n monitoring
 ✅ ArgoCD  (Si lo gestionas externo, instálalo)
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+4️⃣ Exponer ArgoCD (port-forward)
+# ArgoCD no expone un LoadBalancer en k3d, así que usamos port-forward:
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# 👉 https://localhost:8080
+# username = admin
+
+5️⃣ Obtener la contraseña inicial de admin
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d ; echo
 
 ✅ Argo Rollouts
 kubectl create namespace argo-rollouts
