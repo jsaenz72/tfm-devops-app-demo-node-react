@@ -32,6 +32,7 @@ spec:
     # Opciones de sincronización
     syncOptions:
       - CreateNamespace=true  # Crear namespace si no existe
+      - ApplyOutOfSyncOnly=true 
       - PrunePropagationPolicy=foreground
       - PruneLast=true
     
